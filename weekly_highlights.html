@@ -51,7 +51,7 @@
   </div>
 
   <p> I don't know how usual is the definition of saturation, but what I mean by the above is $\{f \in k[t, x_1, \ldots, x_n| \exists m \in \mathbb{N}_0; t^mf \in \langle H_t(I(U)) \rangle\}$</p>
-<h2>22 sept - 28 sept 2025</h2>
+<h2>22 Sept - 28 Sept 2025</h2>
 <p>Let $Y = Z(x^3 - xy - y^3) \subset \mathbb{A}^n_{(x,y)}$, I was trying to understand the the strict transform of $Y$.
 In particular if we looked at the strict transform $\overline{Y} \subset \mathbb{A}^n_{(x,y)} \times \mathbb{P}^{n-1}_{(s:t)}$ what is its intersection with the excepcional subset
 $E$ ? I'm constantly frustrated by how complicated it is to solve "computational" exercises like this one. I believe one can find $I(\overline{Y})$ explicitly by working with saturations
@@ -63,5 +63,24 @@ cardinality if its finite. But we know it is finite since it can be at maximum 2
 <p>The emotions I felt when I saw this are indescribable, truly worthy of the title gem.
 </p>
 
+<h2>29 Sept - 5 Oct 2025</h2>
+<p>This week I mostly learned field theory, what are separable, finite, finitely generated, purely transcendental and separably generated extensions. The need for field theory came from the proof of:
+</p>
+<div class = "theorem"><strong>Theorem:</strong> Every Variety is birational to a hypersurface</div>
+<p>This result is incredibly strong. At the moment birational equivalence feels very weak, I guess I'm just not used to it yet. In this same note there is a result from last week I forgot to highlight that feels super super strong</p>
+<div class = "exercise"><strong>Exercise:</strong> Say $X$ and $Y$ are varieties, $P \in X$ and $Q \in Y$. Then if $O_{X,P} \simeq O_{Y,Q}$ there are neighbourhoods $U$ and $V$, of $P$ and $Q$ respectively, such that $U \simeq V$. In particular
+  $X$ and $Y$ are birationally equivalent.
+</div>
+<p>Something I dabled into was Atiyah's construction of completions since I will need it for Hartshorne's chapter I.5. According to Hartshorne looking at the completion of $O_{X,P}$ is how one studies the "very local behaviour of $X$ near $P$", which is good, since studying neighbourhoods of $P$ isn't 
+  studying local behaviour at all by the above exercise.</p>
 </body>
+
+<h2>6 Oct - 12 Oct 2025</h2>
+<p>Not much of super interesting (I needed to study for exams), but I'm fascinated by the following lemma because it confuses me</p>
+<div class="theorem"><strong>Lemma:</strong>Let $M$ be a finitely generated $A$-module with $A$ commutative. If $I \triangleleft A$ is an ideal and $\phi: M \to M$ is an endomorphism such that
+$\phi(M) \subset IM$ then is a monic polynomial relation $a_0 + a_1 \phi + \ldots + a_{n-1^}\phi^{n-1} + \phi^n = 0$ with $a_0, \ldots, a_n \in I$</div>
+<p>It's proof uses something called the adjunction matrix which I had never seen before. The main point of this lemma is to prove Nakayama's Lemma</p>
+<div class = "theorem"><strong>Nakayama's Lemma:</strong>Let $M$ be a finitely generated $A$-module with $A$ commutative and $I \triangleleft A$ be an ideal contained in the Jacobson Radical $J(A)$.
+Then $IM$ is a proper submodule of $M$ unless $M = 0$</div>
+<p>This Lemma seems to appear everywhere but I'm not yet aware of why, the statement seems a bit random but I'm sure I will realize its importance in the near future.</p>
 </html>
