@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Weekly Highlights</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Real Analysis for High Schoolers</title>
+  <link rel="stylesheet" href="../style.css">
 
   <!-- MathJax for LaTeX support -->
   <script>
@@ -18,9 +18,11 @@
   </script>
 </head>
 <body>
-    <p>
+  <div class = "container">
+    <h3>A brief history of how the subject came to be</h3>
+    <p> 
     This course is a part of the Axiom Project, a project aimed to introduce abstract math to bright high schoolers.
-    A brief history of how the subject came to be: We always knew real analysis/calculus was something we wanted to teach on the project,
+    We always knew real analysis/calculus was something we wanted to teach on the project,
     however for the course to materialise itself in my head took quite some time. At first we where thinking of a "more rigorous basics of calculus" 
     course. The main books in my radar at this point where Apostol's Calculus (which I was already familiar with since I used his second book to learn 
     calculus 2) and Spivak's Calculus. At some point I decided the intersection between Apostol's Calculus and the Calculus the students where likelly
@@ -28,15 +30,99 @@
     Spivak it was.
     </p>
     <p>
-    I randomly stumbled into the construction of the Real Numbers via Cauchy Sequences while preping the course and realised that, actually, all of the
+    I went over the construction of the Real Numbers via Cauchy Sequences while preping the course and realised that, actually, all of the
     subtlety of elementary real analysis is actually in the real numbers themselves. This changed my vision of real analysis fundamentally. I learned real
     analysis via <a href = "https://www.livrosdematematica.com/loja/elon-lages-lima/curso-de-analise-vol-1/?srsltid=AfmBOooYzjYbcezp6igwagKwrVBkU0OuIzKFOCSPcuszFgGEO5qjbQnY">Elon Lages Lima's book</a>
     which actually presents the real numbers axiomatically, so for me the property that every subset of $\mathbb{R}$ bounded from above had a supremum was 
     quite obvious and I've never given it much thought. But it is not obvious at all! Indeed it is the crucial property of $\mathbb{R}$ used to prove the Nested Interval Theorem which is 
-    itself the key step in the proof that every Cauchy sequence of real numbers converges! After this it became clear, no matter what, I will need to construct
-    the real numbers in the course, so Spivak it isn't.
+    itself the key step in the proof that every Cauchy sequence of real numbers converges! Also it is crucial in proving arguably the most important theorem of elementary real analysis,
+    the intermediate value theorem. After this it became clear, no matter what, I will need to construct the real numbers in the course, so Spivak it isn't.
     </p>
     <p>
+      After some search I concluded that <i>Analysis 1 - Terece Tao</i> was the best book for my vision of the course and the course as it is was born.
     </p>
 
+<h3>Assignments</h3>
+The date refers to the assignment's due date
+<ul class = "assignments">
+  <li>18/04 - Assignment 1</li>
+</ul>
+    <h3>Course Structure</h3>
+
+    <p>This is just a plan and it may change</p>
+<ul class="schedule">
+  <li>11/04/2026 - Motivating the study of analysis and Set Theory and Functions</li>
+  <li>18/04/2026 - Set Theory and Functions</li>
+  <li>25/04/2026 - Set Theory and Functions</li>
+  <li>02/05/2026 - Constructing the Real Numbers</li>
+  <li>09/05/2026 - Constructing the Real Numbers</li>
+  <li>16/05/2026 - Constructing the Real Numbers</li>
+  <li>23/05/2026 - Constructing the Real Numbers</li>
+  <li>30/05/2026 - Constructing the Real Numbers</li>
+  <li>06/06/2026 - Constructing the Real Numbers</li>
+  <li>13/06/2026 - Sequences and Series</li>
+  <li>20/06/2026 - Sequences and Series</li>
+  <li>27/06/2026 - Sequences and Series</li>
+  <li>04/07/2026 - Exam 1</li>
+  <li>11/07/2026 - No class</li>
+  <li>18/07/2026 - No class</li>
+  <li>25/07/2026 - No class</li>
+  <li>01/08/2026 - No class</li>
+  <li>08/08/2026 - Continuity and Topology</li>
+  <li>15/08/2026 - Continuity and Topology</li>
+  <li>22/08/2026 - Continuity and Topology</li>
+  <li>29/08/2026 - Continuity and Topology</li>
+  <li>05/09/2026 - Continuity and Topology</li>
+  <li>12/09/2026 - Continuity and Topology</li>
+  <li>19/09/2026 - Exam 2</li>
+  <li>26/09/2026 - Differentiation</li>
+  <li>03/10/2026 - Differentiation</li>
+  <li>10/10/2026 - Differentiation</li>
+  <li>17/10/2026 - Differentiation</li>
+  <li>24/10/2026 - Integration</li>
+  <li>31/10/2026 - Integration</li>
+  <li>07/11/2026 - Integration</li>
+  <li>14/11/2026 - Integration</li>
+  <li>21/11/2026 - Integration</li>
+  <li>28/11/2026 - Exam 3</li>
+</ul>
+
+<h2>Syllabus:</h2>
+<h3>Constructing the Real Numbers</h3>
+<ul>
+  <li>Writing $\mathbb{Q}$ axiomatically</li>
+
+  <li>Defining sequences and Cauchy sequences</li>
+
+  <li>
+    <strong>$\epsilon - \delta$ arguments in $\mathbb{Q}$:</strong>
+    Proving that sums of Cauchy sequences are Cauchy, the absolute value of a Cauchy sequence is Cauchy, and the multiplicative inverse of a Cauchy sequence that does not converge to $0$ is also Cauchy
+  </li>
+
+  <li>
+    Defining the reals as formal limits: showing sum and multiplication are well defined, proving the field axioms, introducing order, and proving trichotomy
+  </li>
+
+  <li>
+    Defining limits of real numbers. Studying Cauchy sequences of real numbers. Proving that every Cauchy sequence converges, every bounded-above set has a supremum, and the Nested Intervals Theorem
+  </li>
+
+  <li>
+    Countability and uncountability: proving $\mathbb{N}, \mathbb{Z}, \mathbb{Q}$ are countable while $\mathbb{R}$ is not
+  </li>
+</ul>
+
+<h3>Sequences and Series</h3>
+<ul>
+  <li>
+    <strong>Sequences:</strong>
+    Computing classic limits such as $n/b^n$, $b^n/n!$, $n!/n^n$ (for $b>1$), $(1 + 1/n)^n$, and $(1 + x/n)^n$
+  </li>
+
+  <li>
+    <strong>Series:</strong>
+    Defining series, basic convergence tests, and computing examples like $\sum 1/n(n+1)$, $\sum 1/n!$, and $\sum x^n/n!$, relating them to $(1 + 1/n)^n$ and $(1 + x/n)^n$. Defining the exponential function, sine, and cosine
+  </li>
+</ul>
+  </div>
 </body>
