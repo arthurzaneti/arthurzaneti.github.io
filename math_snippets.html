@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Math Snippets &amp; Notes</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- MathJax for LaTeX support -->
+  <script>
+    MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+  </script>
+</head>
+<body>
+
+  <header class="blog-header">
+    <h1>Math Snippets</h1>
+    <p>Something like a math diary. I have no expectation that anyone else will ever read this, I write here only for fun.
+    </p>
+  </header>
+
+  <main class="stream">
+      </article>
+    <article class="snippet">
+      <time datetime="2025-10-03">October 3, 2025</time>
+      <h2>Kan Extensions</h2>
+      <p>I'm currently taking a homological algebra course under <a href = "https://wwli.asia/docs/">Wen Wei Li</a>.
+      The course starts with quite a good bit of category theory, much more than the bare minimum. Currently I'm getting used
+      to working with Kan extensions. A theorem that I've not tried proving but is likely not be so hard (although possibly is 
+      somewhat tedius) is that Kan extensions can be computed pointwise via limits/colimits on complete/cocomplete categories. My
+      first reaction when hearing of this theorem was that limits and colimits where likely the more central concept compared to 
+      Kan extensions. A user of Math Stack exchange said (I'm testing blockquotes):
+      <blockquote class="snippet-quote" cite="https://math.stackexchange.com/questions/4340469/why-are-kan-extensions-useful">
+        <p>As a category theorist I am inclined to agree that Kan extensions in general do not seem to be as important as their various special cases. 
+          The Kan extension functor, i.e. the left/right adjoints of the precomposition functor, shows up often enough that it is convenient to have a name for it, though.</p>
+        <cite>
+          — <a href="https://math.stackexchange.com/questions/4340469/why-are-kan-extensions-useful" target="_blank" rel="noopener noreferrer">Math Stack Exchange User</a>
+        </cite>
+      </blockquote>
+      </p><p>
+      Which agrees with my first reaction if limits/colimits are to be considered the most important particular cases of kan extensions,
+      which I find likely. 
+      </p>
+      <p>There are cases where kan extensions exist on non complete/cocomplete categories so that the Kan extension can't be computed
+        by pointwise limit/colimit. Also it seems like Kan extensions are overall easier to work with in more general contexts
+        (like $\infty-$categories or something like that) so I'm more on the Kan extension side than of the limit/colimit side. 
+      </p>
+    </article>
+
+     </article>
+    <!-- 10 Oct 2025 -->
+    <article class="snippet">
+      <time datetime="2025-10-10">October 10, 2025</time>
+      <h2>Module Endomorphisms and Nakayama's Lemma</h2>
+      <p>Not much super interesting this week due to exam prep, but I'm fascinated by the following lemma because it confuses me:</p>
+      
+      <div class="theorem">
+        <strong>Lemma.</strong> Let $M$ be a finitely generated $A$-module with $A$ commutative. If $I \triangleleft A$ is an ideal and $\phi: M \to M$ is an endomorphism such that $\phi(M) \subset IM$, then there is a monic polynomial relation:
+        $$a_0 + a_1 \phi + \ldots + a_{n-1}\phi^{n-1} + \phi^n = 0$$
+        with $a_0, \ldots, a_{n-1} \in I$.
+      </div>
+
+      <p>Its proof uses something called the adjugate matrix, which I had never seen before. The main point of this lemma is to prove Nakayama's Lemma:</p>
+
+      <div class="theorem">
+        <strong>Nakayama's Lemma.</strong> Let $M$ be a finitely generated $A$-module with $A$ commutative and $I \triangleleft A$ be an ideal contained in the Jacobson radical $J(A)$. Then $IM$ is a proper submodule of $M$ unless $M = 0$.
+      </div>
+
+      <p>This lemma seems to appear everywhere, but I'm not yet aware of why. The statement feels somewhat arbitrary, but I'm sure I will realize its importance soon.</p>
+    </article>
+
+    <!-- 03 Oct 2025 -->
+    <article class="snippet">
+      <time datetime="2025-10-03">October 3, 2025</time>
+      <h2>Completions &amp; Local Behavior</h2>
+      <p>I dabbled into Atiyah's construction of completions since I will need it for Hartshorne's Chapter I.5. Looking at the completion of $\mathcal{O}_{X,P}$ is how one studies the "very local behavior of $X$ near $P$." That distinction matters because studying open neighborhoods of $P$ does not isolate local geometry well:</p>
+
+      <div class="exercise">
+        <strong>Exercise.</strong> Say $X$ and $Y$ are varieties, $P \in X$ and $Q \in Y$. If $\mathcal{O}_{X,P} \simeq \mathcal{O}_{Y,Q}$, then there exist neighborhoods $U \ni P$ and $V \ni Q$ such that $U \simeq V$. In particular, $X$ and $Y$ are birationally equivalent.
+      </div>
+    </article>
+
+    <!-- 29 Sep 2025 -->
+    <article class="snippet">
+      <time datetime="2025-09-29">September 29, 2025</time>
+      <h2>Birational Hypersurfaces &amp; Field Theory</h2>
+      <p>Learned field theory: separable, finite, finitely generated, purely transcendental, and separably generated extensions. The motivation came directly from proving:</p>
+
+      <div class="theorem">
+        <strong>Theorem.</strong> Every variety is birational to a hypersurface.
+      </div>
+
+      <p>This result is incredibly strong. At the moment, birational equivalence feels surprisingly loose—I probably just need more practice with it.</p>
+    </article>
+
+    <!-- 25 Sep 2025 -->
+    <article class="snippet">
+      <time datetime="2025-09-25">September 25, 2025</time>
+      <h2>Strict Transform of $Z(x^3 - xy - y^3)$</h2>
+      <p>Let $Y = Z(x^3 - xy - y^3) \subset \mathbb{A}^2_{(x,y)}$. I was trying to understand the strict transform $\overline{Y} \subset \mathbb{A}^2_{(x,y)} \times \mathbb{P}^1_{(s:t)}$ and its intersection with the exceptional divisor $E$.</p>
+      
+      <p>Computing explicit ideals via saturations is difficult by hand, so I tested candidates until reaching $Y' = Z(xt - ys,\, xs^2 + st + yt^2)$. We have $Y' \setminus E = \overline{Y} \setminus E$, meaning $Y' \supset \overline{Y}$, and $Y' \cap E$ consists of just two points.</p>
+      
+      <p>Because $Y$ is defined by equations symmetric in $x$ and $y$, so is $\overline{Y}$. Since $((0,0), (1:1)) \notin Y' \supset \overline{Y}$, the set $E \cap \overline{Y}$ must have even cardinality if finite. Because it is bounded above by $|Y' \cap E| = 2$ and cannot be empty, $|E \cap \overline{Y}| = 2$, proving $\overline{Y} = Y'$.</p>
+    </article>
+
+    <!-- 18 Sep 2025 -->
+    <article class="snippet">
+      <time datetime="2025-09-18">September 18, 2025</time>
+      <h2>Projective Closures and Saturation</h2>
+      <p>For an affine variety $Y \subset \mathbb{A}^n$, describing $I(\overline{Y})$ is subtle. The naive homogenization of $I(Y)$ generates extraneous components at infinity and may fail to be prime. The clean characterization requires saturating the ideal:</p>
+
+      <div class="theorem">
+        <strong>Homogenize then Saturate.</strong> Let $Y \subset \mathbb{A}^n_{(x_1, \ldots, x_n)}$ be an affine variety and $\overline{Y} \subset \mathbb{P}^n_{(t:x_1, \ldots, x_n)}$ its projective closure. Let $H_t$ be the homogenization map:
+        $$H_t(f) = t^{\deg(f)} f(x_1/t, \ldots, x_n/t)$$
+        Then:
+        $$I(\overline{Y}) = \big(\langle H_t(I(Y)) \rangle : t^{\infty}\big) = \{f \in k[t, x_1, \ldots, x_n] \mid \exists m \ge 0,\; t^m f \in \langle H_t(I(Y)) \rangle\}$$
+      </div>
+    </article>
+
+    <!-- 15 Sep 2025 -->
+    <article class="snippet">
+      <time datetime="2025-09-15">September 15, 2025</time>
+      <h2>Krull's Hauptidealsatz</h2>
+      <p>Working through Hartshorne I.1.9:</p>
+
+      <div class="exercise">
+        <strong>Exercise (Hartshorne I.1.9).</strong> If $I \triangleleft k[x_1, \ldots, x_n]$ is generated by $r$ elements, then every irreducible component of $Z(I)$ has dimension at least $n - r$.
+      </div>
+
+      <p>This led to conjecturing the general ring-theoretic form before checking the reference:</p>
+
+      <div class="theorem">
+        <strong>Theorem (Krull's Hauptidealsatz).</strong> Let $A$ be a Noetherian commutative ring and $J \triangleleft A$ be generated by $r$ elements. Then every minimal prime ideal containing $J$ has height at most $r$.
+      </div>
+    </article>
+
+  </main>
+
+</body>
+</html>
