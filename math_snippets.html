@@ -27,6 +27,26 @@
 
   <main class="stream">
     <article class = "snippet">
+      <time datetime ="2025-10-14">October 19, 2026</time>
+      <h2>The Hom complex</h2>
+      <p>I just learned of a construction called $\mathrm{Hom}^*(X,Y)$ complex for $X,Y$ complexes over a complete abelian category (completeness for the product below to exist). 
+      It captures a disgusting amount of information about the maps between the complexes $X$ and $Y$. We define 
+      
+      $$\mathrm{Hom}^n(X,Y) = \prod_{k \in \mathbb{Z}} \mathrm{Hom}(X^k, Y^{k + n})$$
+
+      And the differential $D$ here is given by the universal property of products using the map $D^k(\prod\limits_{k^\prime} f_{k^\prime}) = f^{k+1}d_X^k - (-1)^kd_Y^{n+k}f^k$.
+      This admitedly is a bit of a hideous formula but we can ommit some indices if so desired. Anyway, the kernel of $D^0$ corresponds (not being overly precise here, but that isn't the goal anyway)
+      to the chain maps $X \to Y$ and the image of $D^{-1}$ corresponds to the null homotopic maps, so that $\mathrm{H}^0(\mathrm{Hom}^*(X,Y))$ are the morphisms $X \to Y$ on the homotopy category of $C(\mathcal(A))$, which we denote $K(\mathcal{A})$.
+      I'm not entirely sure of the interpretations of the other cohomology groups but there is a somewhat easy to prove formula that works under the usual sign conventions for the shifted complexes: 
+    
+      $$\mathrm{H}^n(\mathrm{Hom}^*(X,Y)) \cong \mathrm{Hom}_{K(\mathcal{A})}(X, Y[n])$$
+
+      I'm pretty sure that the kernel of $D^{-1}$ corresponds to homotopies from maps to themselves and the image of $D^{-2}$ makes no sense to me currently (I have not thought about for too long).
+      Anyway, this Hom complex point of view seems useful. 
+    </p>
+      
+    </article>
+    <article class = "snippet">
       <time datetime ="2025-10-14">October 15, 2026</time>
       <h2>AI and mathematics</h2>
       <p>
