@@ -1,0 +1,1785 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Chinese 100" />
+  <title>Chinese 100 — iOS Flashcards</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', '"PingFang SC"', '"Hiragino Sans GB"', '"Microsoft YaHei"', 'Inter', 'sans-serif'],
+            hanzi: ['"PingFang SC"', '"Hiragino Sans GB"', '"Heiti SC"', '"Microsoft YaHei"', '-apple-system', 'sans-serif']
+          },
+          colors: {
+            ios: {
+              bg: '#000000',
+              card: '#1C1C1E',
+              cardElevated: '#2C2C2E',
+              separator: '#38383A',
+              blue: '#0A84FF',
+              green: '#30D158',
+              orange: '#FF9F0A',
+              red: '#FF453A',
+              teal: '#64D2FF',
+              indigo: '#5E5CE6',
+              gray: '#8E8E93'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+      user-select: none;
+      box-sizing: border-box;
+    }
+
+    input, textarea {
+      user-select: text;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background-color: #09090b;
+      overscroll-behavior: none;
+      touch-action: manipulation;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* 3D Flashcard Flip Mechanics */
+    .perspective-container {
+      perspective: 1400px;
+    }
+
+    .card-3d-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+      transform-style: preserve-3d;
+      will-change: transform;
+    }
+
+    .card-3d-inner.is-flipped {
+      transform: rotateY(180deg);
+    }
+
+    .card-face {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      border-radius: 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-face-back {
+      transform: rotateY(180deg);
+    }
+
+    /* Audio Speaking Ripple Animation */
+    @keyframes pulseRing {
+      0% {
+        transform: scale(0.95);
+        opacity: 0.85;
+      }
+      70% {
+        transform: scale(1.38);
+        opacity: 0;
+      }
+      100% {
+        transform: scale(1.45);
+        opacity: 0;
+      }
+    }
+
+    .speaking-ring::before,
+    .speaking-ring::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 9999px;
+      border: 2px solid #0A84FF;
+      animation: pulseRing 1.3s cubic-bezier(0.24, 0, 0.38, 1) infinite;
+      pointer-events: none;
+    }
+
+    .speaking-ring::after {
+      animation-delay: 0.45s;
+    }
+
+    /* Tactile button press effect */
+    .ios-press {
+      transition: transform 0.12s cubic-bezier(0.2, 0, 0, 1), opacity 0.12s ease;
+      cursor: pointer;
+    }
+    .ios-press:active {
+      transform: scale(0.95);
+    }
+
+    /* Card entry transition */
+    @keyframes cardEnter {
+      0% {
+        opacity: 0;
+        transform: translateY(8px) scale(0.97);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    .animate-card-enter {
+      animation: cardEnter 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* Desktop iPhone Frame Wrapper */
+    @media (min-width: 500px) {
+      .iphone-shell {
+        max-width: 420px;
+        height: min(92vh, 860px);
+        border-radius: 48px;
+        box-shadow: 0 25px 70px -15px rgba(0, 0, 0, 0.75), 0 0 0 10px #27272a, 0 0 0 12px #3f3f46;
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-zinc-950 text-white font-sans flex items-center justify-center antialiased selection:bg-ios-blue selection:text-white">
+
+  <!-- Main App Shell -->
+  <div id="appShell" class="iphone-shell relative w-full h-full bg-black dark:bg-black text-zinc-900 dark:text-white flex flex-col overflow-hidden transition-colors duration-200"
+       style="padding-top: max(var(--sat), 10px); padding-bottom: max(var(--sab), 8px);">
+
+    <!-- ========================================== -->
+    <!-- TOP HEADER BAR                             -->
+    <!-- ========================================== -->
+    <header class="px-3.5 pt-1 pb-2 flex flex-col gap-2.5 shrink-0 z-20 border-b border-zinc-200/80 dark:border-zinc-800/80 bg-white/90 dark:bg-black/90 backdrop-blur-md">
+      <!-- Top Row: Brand + Quick Utility Buttons -->
+      <div class="flex items-center justify-between gap-1.5">
+        <!-- Brand & Mini Status -->
+        <div class="flex items-center gap-2 min-w-0">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-br from-ios-blue to-indigo-600 flex items-center justify-center shadow-md shadow-ios-blue/20 text-white font-hanzi font-bold text-lg shrink-0">
+            中
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-sm sm:text-base font-bold tracking-tight text-zinc-900 dark:text-white leading-none truncate">Chinese 100</h1>
+              <button id="btnModePill" type="button" onclick="window.toggleStudyMode()"
+                      class="ios-press px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-ios-blue/15 text-ios-blue border border-ios-blue/30">
+                SRS
+              </button>
+            </div>
+            <div class="flex items-center gap-1.5 mt-1 text-[11px] font-medium text-zinc-500 dark:text-zinc-400">
+              <span>Due <strong id="statDueCount" class="text-ios-blue">0</strong></span>
+              <span>·</span>
+              <span>Learn <strong id="statLearningCount" class="text-amber-500">0</strong></span>
+              <span>·</span>
+              <span>Done <strong id="statMasteredCount" class="text-ios-green">0</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Utility Buttons: Shuffle, Speed, Auto-Speak, Settings -->
+        <div class="flex items-center gap-1 shrink-0">
+          <!-- Shuffle Button -->
+          <button id="btnShuffleQueue" type="button" onclick="window.manualShuffleQueue()" title="Shuffle study queue"
+                  class="ios-press h-8 px-2.5 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-200 flex items-center gap-1">
+            <span>🔀</span>
+            <span class="hidden sm:inline">Shuffle</span>
+          </button>
+
+          <!-- Speed Toggle -->
+          <button id="btnSpeedToggle" type="button" onclick="window.toggleAudioSpeed()" title="Toggle speech speed (1.0x vs 0.75x)"
+                  class="ios-press h-8 px-2 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-200 flex items-center gap-0.5">
+            <span id="speedIcon" class="text-[11px]">⚡</span>
+            <span id="speedLabel">1.0x</span>
+          </button>
+
+          <!-- Auto-Speak Toggle -->
+          <button id="btnAutoSpeak" type="button" onclick="window.toggleAutoSpeak()" title="Auto-play pronunciation"
+                  class="ios-press h-8 px-2 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors bg-ios-blue/15 border-ios-blue/40 text-ios-blue">
+            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+            </svg>
+            <span id="autoSpeakLabel">Auto</span>
+          </button>
+
+          <!-- Settings Sheet Button -->
+          <button id="btnOpenSettings" type="button" onclick="window.openSettingsModal()" aria-label="Settings and Statistics"
+                  class="ios-press w-8 h-8 rounded-xl bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 flex items-center justify-center text-zinc-600 dark:text-zinc-300">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Horizontally Scrollable Category Filter Pills -->
+      <div id="categoryPillContainer" class="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </header>
+
+    <!-- ========================================== -->
+    <!-- TAB 1: STUDY VIEW (FLASHCARDS)             -->
+    <!-- ========================================== -->
+    <main id="studyView" class="flex-1 flex flex-col justify-between px-4 pt-3 pb-3 overflow-hidden bg-zinc-50 dark:bg-black">
+      
+      <!-- Session Progress Bar & Counter -->
+      <div class="flex items-center justify-between gap-3 px-1 shrink-0">
+        <div class="flex-1 h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
+          <div id="sessionProgressBar" class="h-full bg-ios-blue transition-all duration-300 rounded-full" style="width: 5%"></div>
+        </div>
+        <div class="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 dark:text-zinc-400 shrink-0">
+          <span id="queueCounterText">100 in queue</span>
+          <span class="text-zinc-300 dark:text-zinc-700">|</span>
+          <span class="flex items-center gap-0.5 text-amber-500">
+            🔥 <span id="streakCount">0</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Flashcard Stage -->
+      <div id="cardStageContainer" class="relative flex-1 my-3 flex items-center justify-center overflow-hidden">
+        
+        <!-- 3D Flip Card Wrapper -->
+        <div id="flashcardWrapper" class="perspective-container w-full h-full max-h-[470px] cursor-pointer" onclick="window.handleCardBodyTap(event)">
+          <div id="flashcardInner" class="card-3d-inner">
+            
+            <!-- ================= FRONT FACE (HANZI + AUDIO ONLY) ================= -->
+            <div class="card-face bg-white dark:bg-ios-card border border-zinc-200/90 dark:border-zinc-800/90 shadow-xl p-6">
+              <!-- Card Header: Category Badge & SRS Status Pill -->
+              <div class="flex items-center justify-between w-full">
+                <span id="frontCategoryBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 tracking-wide">
+                  Basics
+                </span>
+                <span id="frontStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-ios-blue/15 text-ios-blue">
+                  New
+                </span>
+              </div>
+
+              <!-- Center: Large Hanzi + Prominent Audio Speak Button -->
+              <div class="flex flex-col items-center justify-center my-auto py-4 text-center">
+                <div id="frontHanzi" class="font-hanzi font-bold text-zinc-900 dark:text-white tracking-tight select-text transition-all duration-150 leading-tight mb-8 text-7xl">
+                  你好
+                </div>
+
+                <!-- Prominent Front Audio Button -->
+                <button id="frontAudioBtn" type="button" onclick="window.handleAudioBtnTap(event)"
+                        class="ios-press relative w-20 h-20 rounded-full bg-ios-blue/15 hover:bg-ios-blue/25 active:bg-ios-blue/30 border-2 border-ios-blue/40 text-ios-blue flex flex-col items-center justify-center shadow-lg shadow-ios-blue/10 transition-all">
+                  <svg class="w-8 h-8" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                  </svg>
+                  <span class="text-[10px] font-bold uppercase tracking-wider mt-0.5">Listen</span>
+                </button>
+              </div>
+
+              <!-- Card Footer: Subtle Flip Prompt -->
+              <div class="w-full flex items-center justify-center gap-1.5 text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                <span>Tap card to reveal Pinyin &amp; meaning</span>
+              </div>
+            </div>
+
+            <!-- ================= BACK FACE (PINYIN + ENGLISH + REPLAY) ================= -->
+            <div class="card-face card-face-back bg-white dark:bg-ios-card border border-zinc-200/90 dark:border-zinc-800/90 shadow-xl p-6">
+              <!-- Back Header: Category & Interval Note -->
+              <div class="flex items-center justify-between w-full border-b border-zinc-100 dark:border-zinc-800/80 pb-3">
+                <span id="backCategoryBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                  Basics
+                </span>
+                <span id="backIntervalNote" class="text-xs font-medium text-zinc-400 dark:text-zinc-500">
+                  First review
+                </span>
+              </div>
+
+              <!-- Center: Smaller Hanzi Reference + Standard Pinyin + English Meaning -->
+              <div class="flex flex-col items-center justify-center my-auto text-center px-2">
+                <div id="backHanziRef" class="font-hanzi text-3xl font-bold text-zinc-400 dark:text-zinc-400 mb-2 select-text">
+                  你好
+                </div>
+
+                <div id="backPinyin" class="text-4xl sm:text-5xl font-bold tracking-tight text-zinc-900 dark:text-white mb-4 select-text">
+                  nǐ hǎo
+                </div>
+
+                <div class="w-12 h-1 rounded-full bg-zinc-200 dark:bg-zinc-800 mb-4"></div>
+
+                <div id="backEnglish" class="text-2xl sm:text-3xl font-extrabold text-ios-blue leading-snug select-text">
+                  hello
+                </div>
+              </div>
+
+              <!-- Back Footer: 1.0x Normal + 0.75x Slow Audio Replay Buttons -->
+              <div class="flex items-center justify-center gap-2.5 pt-2" onclick="event.stopPropagation()">
+                <button id="backAudioNormalBtn" type="button" onclick="window.speakCurrentCard(1.0, event)"
+                        class="ios-press flex-1 max-w-[155px] h-11 rounded-2xl bg-ios-blue text-white font-semibold text-xs flex items-center justify-center gap-2 shadow-md shadow-ios-blue/25">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                  </svg>
+                  <span>Speak (1.0x)</span>
+                </button>
+
+                <button id="backAudioSlowBtn" type="button" onclick="window.speakCurrentCard(0.72, event)"
+                        class="ios-press flex-1 max-w-[155px] h-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 font-semibold text-xs flex items-center justify-center gap-1.5 border border-zinc-200 dark:border-zinc-700">
+                  <span>🐢</span>
+                  <span>Slow (0.75x)</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ================= DECK COMPLETED / EMPTY STATE ================= -->
+        <div id="emptyDeckState" class="hidden w-full h-full max-h-[470px] rounded-[28px] bg-white dark:bg-ios-card border border-zinc-200 dark:border-zinc-800 p-7 flex-col items-center justify-center text-center shadow-xl">
+          <div class="w-16 h-16 rounded-full bg-ios-green/15 text-ios-green flex items-center justify-center text-3xl mb-4">
+            🎉
+          </div>
+          <h2 class="text-xl font-bold text-zinc-900 dark:text-white mb-1.5">All Caught Up!</h2>
+          <p id="emptyDeckSubtext" class="text-sm text-zinc-500 dark:text-zinc-400 max-w-xs mb-6 leading-relaxed">
+            You have finished all due cards in this category for right now.
+          </p>
+          <div class="flex flex-col w-full gap-2.5 max-w-xs">
+            <button type="button" onclick="window.startCramSession()"
+                    class="ios-press w-full h-12 rounded-2xl bg-ios-blue text-white font-bold text-sm shadow-lg shadow-ios-blue/25 flex items-center justify-center gap-2">
+              <span>🔀</span>
+              <span>Free Practice (Shuffle Category)</span>
+            </button>
+            <button type="button" onclick="window.selectCategory('all')"
+                    class="ios-press w-full h-11 rounded-2xl bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 font-semibold text-xs">
+              Switch to All 100 Cards
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- BOTTOM ACTION CONTROLS (SHOW ANSWER / SRS) -->
+      <!-- ========================================== -->
+      <div id="studyControlsArea" class="h-[74px] shrink-0 flex items-center justify-center">
+        
+        <!-- STATE A: Front of card -> Full-width "Show Answer" button -->
+        <button id="btnShowAnswer" type="button" onclick="window.flipCardToBack()"
+                class="ios-press w-full h-14 rounded-2xl bg-ios-blue hover:bg-blue-500 text-white font-bold text-base tracking-wide shadow-lg shadow-ios-blue/25 flex items-center justify-center gap-2">
+          <span>Show Answer</span>
+        </button>
+
+        <!-- STATE B: Back of card -> 4 Spaced Repetition Rating Buttons -->
+        <div id="ratingButtonsGrid" class="hidden w-full grid-cols-4 gap-2">
+          <!-- 1. AGAIN -->
+          <button id="btnRateAgain" type="button" onclick="window.rateCard(1)"
+                  class="ios-press h-16 rounded-2xl bg-ios-red/15 hover:bg-ios-red/25 border border-ios-red/35 flex flex-col items-center justify-center px-1">
+            <span id="ivAgain" class="text-[11px] font-semibold text-ios-red/90 mb-0.5">&lt;1m</span>
+            <span class="text-sm font-extrabold text-ios-red">Again</span>
+          </button>
+
+          <!-- 2. HARD -->
+          <button id="btnRateHard" type="button" onclick="window.rateCard(2)"
+                  class="ios-press h-16 rounded-2xl bg-ios-orange/15 hover:bg-ios-orange/25 border border-ios-orange/35 flex flex-col items-center justify-center px-1">
+            <span id="ivHard" class="text-[11px] font-semibold text-ios-orange/90 mb-0.5">6m</span>
+            <span class="text-sm font-extrabold text-ios-orange">Hard</span>
+          </button>
+
+          <!-- 3. GOOD -->
+          <button id="btnRateGood" type="button" onclick="window.rateCard(3)"
+                  class="ios-press h-16 rounded-2xl bg-ios-green/15 hover:bg-ios-green/25 border border-ios-green/35 flex flex-col items-center justify-center px-1">
+            <span id="ivGood" class="text-[11px] font-semibold text-ios-green/90 mb-0.5">1d</span>
+            <span class="text-sm font-extrabold text-ios-green">Good</span>
+          </button>
+
+          <!-- 4. EASY -->
+          <button id="btnRateEasy" type="button" onclick="window.rateCard(4)"
+                  class="ios-press h-16 rounded-2xl bg-ios-teal/15 hover:bg-ios-teal/25 border border-ios-teal/35 flex flex-col items-center justify-center px-1">
+            <span id="ivEasy" class="text-[11px] font-semibold text-ios-teal/90 mb-0.5">4d</span>
+            <span class="text-sm font-extrabold text-ios-teal">Easy</span>
+          </button>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ========================================== -->
+    <!-- TAB 2: DECK & INSTANT LOOKUP (100 WORDS)   -->
+    <!-- ========================================== -->
+    <section id="lookupView" class="hidden flex-1 flex-col overflow-hidden bg-zinc-50 dark:bg-black">
+      <!-- Search Bar Header -->
+      <div class="px-4 pt-3 pb-2 shrink-0">
+        <div class="relative flex items-center">
+          <svg class="w-4 h-4 text-zinc-400 absolute left-3.5 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input id="lookupSearchInput" type="text" oninput="window.renderLookupList()"
+                 placeholder="Search English, Pinyin, or Hanzi (e.g. chicken, gym)..."
+                 class="w-full h-10 pl-10 pr-9 rounded-xl bg-zinc-200/75 dark:bg-zinc-900 text-sm text-zinc-900 dark:text-white placeholder-zinc-400 dark:placeholder-zinc-500 border border-transparent focus:border-ios-blue focus:outline-none transition-all"/>
+          <button id="clearSearchBtn" type="button" onclick="window.clearLookupSearch()" class="hidden absolute right-2.5 w-5 h-5 rounded-full bg-zinc-400/40 text-white text-xs items-center justify-center">
+            ✕
+          </button>
+        </div>
+        <div class="flex items-center justify-between mt-2 px-1 text-[11px] text-zinc-500 dark:text-zinc-400">
+          <span id="lookupCountLabel">Showing 100 words</span>
+          <span>Tap any row to speak out loud 🔊</span>
+        </div>
+      </div>
+
+      <!-- Scrollable Word List -->
+      <div id="lookupListContainer" class="flex-1 overflow-y-auto px-4 pb-6 space-y-2">
+        <!-- Populated dynamically via JS -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- BOTTOM IOS TAB BAR (2 TABS)                -->
+    <!-- ========================================== -->
+    <nav class="h-14 shrink-0 bg-white/90 dark:bg-zinc-950/90 backdrop-blur-lg border-t border-zinc-200/80 dark:border-zinc-800/80 grid grid-cols-2 px-6 z-20">
+      <!-- Tab 1: Study Flashcards -->
+      <button id="tabBtnStudy" type="button" onclick="window.switchTab('study')"
+              class="ios-press flex flex-col items-center justify-center gap-0.5 text-ios-blue">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+        </svg>
+        <span class="text-[11px] font-bold">Study</span>
+      </button>
+
+      <!-- Tab 2: Deck & Speak (100 Words) -->
+      <button id="tabBtnLookup" type="button" onclick="window.switchTab('lookup')"
+              class="ios-press flex flex-col items-center justify-center gap-0.5 text-zinc-400 dark:text-zinc-500">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+        </svg>
+        <span class="text-[11px] font-bold">Deck &amp; Speak (100)</span>
+      </button>
+    </nav>
+
+    <!-- ========================================== -->
+    <!-- SETTINGS & PROGRESS MODAL SHEET            -->
+    <!-- ========================================== -->
+    <div id="settingsModal" class="hidden absolute inset-0 z-50 bg-black/60 backdrop-blur-sm flex-col justify-end" onclick="window.closeSettingsModal()">
+      <div class="w-full max-h-[85%] bg-white dark:bg-zinc-900 rounded-t-3xl border-t border-zinc-200 dark:border-zinc-800 p-5 flex flex-col overflow-y-auto shadow-2xl" onclick="event.stopPropagation()">
+        <div class="w-10 h-1.5 rounded-full bg-zinc-300 dark:bg-zinc-700 mx-auto mb-4"></div>
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-zinc-900 dark:text-white">Deck Progress &amp; Settings</h2>
+          <button type="button" onclick="window.closeSettingsModal()" class="ios-press w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-300 flex items-center justify-center font-bold">
+            ✕
+          </button>
+        </div>
+
+        <!-- Mastery Progress Breakdown -->
+        <div class="p-4 rounded-2xl bg-zinc-100 dark:bg-zinc-800/70 mb-4">
+          <div class="flex items-center justify-between text-xs font-semibold mb-2">
+            <span class="text-zinc-500 dark:text-zinc-400">Overall Deck Mastery</span>
+            <span id="modalMasteryPercent" class="text-ios-green font-bold">0% (0 / 100)</span>
+          </div>
+          <div class="w-full h-2.5 bg-zinc-200 dark:bg-zinc-700 rounded-full overflow-hidden flex mb-3">
+            <div id="barMastered" class="bg-ios-green h-full transition-all" style="width: 0%"></div>
+            <div id="barLearning" class="bg-amber-400 h-full transition-all" style="width: 0%"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div class="p-2 rounded-xl bg-white dark:bg-zinc-900/90">
+              <div id="modalStatNew" class="text-base font-extrabold text-ios-blue">100</div>
+              <div class="text-[10px] font-semibold uppercase text-zinc-400">New</div>
+            </div>
+            <div class="p-2 rounded-xl bg-white dark:bg-zinc-900/90">
+              <div id="modalStatLearning" class="text-base font-extrabold text-amber-500">0</div>
+              <div class="text-[10px] font-semibold uppercase text-zinc-400">Learning</div>
+            </div>
+            <div class="p-2 rounded-xl bg-white dark:bg-zinc-900/90">
+              <div id="modalStatMastered" class="text-base font-extrabold text-ios-green">0</div>
+              <div class="text-[10px] font-semibold uppercase text-zinc-400">Mastered</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preferences List -->
+        <div class="space-y-2.5 mb-5">
+          <!-- Study Mode Toggle -->
+          <div class="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800/70">
+            <div>
+              <div class="text-sm font-semibold text-zinc-900 dark:text-white">Study Mode</div>
+              <div class="text-xs text-zinc-500 dark:text-zinc-400">SRS Due Queue vs. Free Practice (Cram)</div>
+            </div>
+            <button type="button" onclick="window.toggleStudyMode()" id="cramToggleBtn"
+                    class="ios-press px-3.5 py-1.5 rounded-xl bg-ios-blue/15 text-ios-blue text-xs font-bold">
+              SRS Mode
+            </button>
+          </div>
+
+          <!-- Theme Toggle -->
+          <div class="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800/70">
+            <div>
+              <div class="text-sm font-semibold text-zinc-900 dark:text-white">Appearance</div>
+              <div class="text-xs text-zinc-500 dark:text-zinc-400">High-contrast dark or light card theme</div>
+            </div>
+            <button type="button" onclick="window.toggleTheme()" id="themeToggleBtn"
+                    class="ios-press px-3.5 py-1.5 rounded-xl bg-zinc-200 dark:bg-zinc-700 text-xs font-bold text-zinc-800 dark:text-white">
+              Dark Mode
+            </button>
+          </div>
+
+          <!-- Voice Status & Test -->
+          <div class="flex items-center justify-between p-3.5 rounded-2xl bg-zinc-100 dark:bg-zinc-800/70">
+            <div class="pr-2">
+              <div class="text-sm font-semibold text-zinc-900 dark:text-white">Mandarin Voice Engine</div>
+              <div id="voiceEngineStatus" class="text-xs text-zinc-500 dark:text-zinc-400 truncate max-w-[200px]">Ready (zh-CN)</div>
+            </div>
+            <button type="button" onclick="window.speakText('你好，欢迎学习中文', 1.0)"
+                    class="ios-press px-3 py-1.5 rounded-xl bg-ios-blue text-white text-xs font-bold shrink-0">
+              Test 🔊
+            </button>
+          </div>
+        </div>
+
+        <!-- Reset Progress Section (Two-Step Safe Confirmation, No alert/confirm) -->
+        <div class="border-t border-zinc-200 dark:border-zinc-800 pt-4 mt-auto">
+          <button id="btnResetStep1" type="button" onclick="window.showResetConfirmation()"
+                  class="ios-press w-full h-11 rounded-2xl bg-ios-red/15 text-ios-red font-bold text-xs flex items-center justify-center gap-1.5">
+            <span>Reset All Spaced-Repetition Progress</span>
+          </button>
+
+          <div id="resetConfirmBox" class="hidden flex-col gap-2 p-3 rounded-2xl bg-ios-red/10 border border-ios-red/30">
+            <p class="text-xs font-semibold text-center text-ios-red">Are you sure? This will reset all 100 cards back to New.</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="window.hideResetConfirmation()"
+                      class="ios-press h-9 rounded-xl bg-zinc-200 dark:bg-zinc-800 text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                Cancel
+              </button>
+              <button type="button" onclick="window.confirmResetAllProgress()"
+                      class="ios-press h-9 rounded-xl bg-ios-red text-white text-xs font-bold">
+                Yes, Reset Deck
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- TOAST NOTIFICATION BANNER                  -->
+    <!-- ========================================== -->
+    <div id="toastBanner" class="pointer-events-none fixed top-14 left-1/2 -translate-x-1/2 z-50 opacity-0 -translate-y-2 transition-all duration-200 px-4 py-2 rounded-full bg-zinc-900/95 dark:bg-white/95 text-white dark:text-zinc-900 text-xs font-bold shadow-lg">
+      Saved
+    </div>
+
+  </div>
+
+  <!-- ========================================== -->
+  <!-- APPLICATION JAVASCRIPT                     -->
+  <!-- ========================================== -->
+  <script>
+    (function () {
+      "use strict";
+
+      // =======================================================================
+      // 1. SAFE DOUBLE-QUOTED JSON DATASET (100 WORDS)
+      // =======================================================================
+      // Format: [Hanzi, Pinyin, English, RawCategory]
+      const RAW_WORDS = [
+        ["你好", "nǐ hǎo", "hello", "basics"],
+        ["谢谢", "xièxie", "thank you", "basics"],
+        ["不客气", "bú kèqi", "you're welcome", "basics"],
+        ["对不起", "duìbuqǐ", "sorry", "basics"],
+        ["没关系", "méi guānxi", "it's okay / no problem", "basics"],
+        ["是", "shì", "to be / yes", "basics"],
+        ["不是", "bú shì", "not / no", "basics"],
+        ["好", "hǎo", "good / okay", "basics"],
+        ["不好", "bù hǎo", "not good", "basics"],
+        ["请", "qǐng", "please", "basics"],
+        ["这个", "zhège", "this / this one", "survival"],
+        ["那个", "nàge", "that / that one", "survival"],
+        ["哪里", "nǎlǐ", "where", "survival"],
+        ["什么", "shénme", "what", "survival"],
+        ["多少钱", "duōshao qián", "how much does it cost?", "survival"],
+        ["买单", "mǎidān", "check / bill please", "survival"],
+        ["扫码", "sǎomǎ", "scan QR code (to pay)", "survival"],
+        ["微信", "wēixìn", "WeChat", "survival"],
+        ["支付宝", "zhīfùbǎo", "Alipay", "survival"],
+        ["可以", "kěyǐ", "can / allowed to", "verbs"],
+        ["要", "yào", "to want / need", "verbs"],
+        ["不要", "bú yào", "do not want", "verbs"],
+        ["有", "yǒu", "to have / there is", "verbs"],
+        ["没有", "méiyǒu", "do not have / there isn't", "verbs"],
+        ["去", "qù", "to go", "verbs"],
+        ["来", "lái", "to come", "verbs"],
+        ["吃", "chī", "to eat", "verbs"],
+        ["喝", "hē", "to drink", "verbs"],
+        ["买", "mǎi", "to buy", "verbs"],
+        ["看", "kàn", "to look / to watch / to read", "verbs"],
+        ["懂", "dǒng", "to understand", "verbs"],
+        ["我不懂", "wǒ bù dǒng", "I don't understand", "survival"],
+        ["水", "shuǐ", "water", "food_drink"],
+        ["热", "rè", "hot", "food_drink"],
+        ["冰", "bīng", "iced / cold", "food_drink"],
+        ["辣", "là", "spicy", "food_drink"],
+        ["不辣", "bú là", "not spicy", "food_drink"],
+        ["打包", "dǎbāo", "takeout / to go", "food_drink"],
+        ["在这里吃", "zài zhèlǐ chī", "eat here / dine in", "food_drink"],
+        ["卫生间", "wèishēngjiān", "restroom / toilet", "places"],
+        ["在哪儿", "zài nǎr", "where is it located?", "survival"],
+        ["左边", "zuǒbian", "left side", "directions"],
+        ["右边", "yòubian", "right side", "directions"],
+        ["前面", "qiánmian", "front / straight ahead", "directions"],
+        ["后面", "hòumian", "behind / back", "directions"],
+        ["今天", "jīntiān", "today", "time"],
+        ["明天", "míngtiān", "tomorrow", "time"],
+        ["现在", "xiànzài", "now", "time"],
+        ["几点", "jǐ diǎn", "what time?", "time"],
+        ["一", "yī", "one (1)", "numbers"],
+        ["二", "èr", "two (2)", "numbers"],
+        ["三", "sān", "three (3)", "numbers"],
+        ["四", "sì", "four (4)", "numbers"],
+        ["五", "wǔ", "five (5)", "numbers"],
+        ["六", "liù", "six (6)", "numbers"],
+        ["七", "qī", "seven (7)", "numbers"],
+        ["八", "bā", "eight (8)", "numbers"],
+        ["九", "jiǔ", "nine (9)", "numbers"],
+        ["十", "shí", "ten (10)", "numbers"],
+        ["个", "gè", "general measure word", "numbers"],
+        ["鸡肉", "jīròu", "chicken meat", "nutrition"],
+        ["鸡蛋", "jīdàn", "chicken egg", "nutrition"],
+        ["牛肉", "niúròu", "beef", "nutrition"],
+        ["猪肉", "zhūròu", "pork", "nutrition"],
+        ["米饭", "mǐfàn", "cooked rice", "nutrition"],
+        ["面条", "miàntiáo", "noodles", "nutrition"],
+        ["蛋白质", "dànbáizhì", "protein", "nutrition"],
+        ["蔬菜", "shūcài", "vegetables", "nutrition"],
+        ["豆类", "dòulèi", "beans / lentils", "nutrition"],
+        ["牛奶", "niúnǎi", "cow milk", "nutrition"],
+        ["燕麦", "yànmài", "oats / oatmeal", "nutrition"],
+        ["水煮", "shuǐzhǔ", "boiled in water", "nutrition"],
+        ["少油", "shǎo yóu", "less oil", "nutrition"],
+        ["多加", "duō jiā", "add extra", "nutrition"],
+        ["健身房", "jiànshēnfáng", "gym", "fitness"],
+        ["锻炼", "duànliàn", "to work out / exercise", "fitness"],
+        ["哑铃", "yǎlíng", "dumbbell", "fitness"],
+        ["杠铃", "gànglíng", "barbell", "fitness"],
+        ["重量", "zhòngliàng", "weight", "fitness"],
+        ["深蹲", "shēndūn", "squat", "fitness"],
+        ["卧推", "wòtuī", "bench press", "fitness"],
+        ["引体向上", "yǐntǐ xiàngshàng", "pull-up", "fitness"],
+        ["组", "zǔ", "set (e.g. 3 sets)", "fitness"],
+        ["次", "cì", "rep / repetition", "fitness"],
+        ["力竭", "lìjié", "to failure (muscular)", "fitness"],
+        ["肌肉", "jīròu", "muscle", "fitness"],
+        ["跑步", "pǎobù", "to run / running", "fitness"],
+        ["休息", "xiūxi", "to rest", "fitness"],
+        ["数学", "shùxué", "mathematics", "academics"],
+        ["大学", "dàxué", "university", "campus"],
+        ["食堂", "shítáng", "canteen / dining hall", "campus"],
+        ["宿舍", "sùshè", "dormitory", "campus"],
+        ["图书馆", "túshūguǎn", "library", "campus"],
+        ["教室", "jiàoshì", "classroom", "campus"],
+        ["电脑", "diànnǎo", "computer", "daily"],
+        ["手机", "shǒujī", "mobile phone", "daily"],
+        ["自行车", "zìxíngchē", "bicycle", "daily"],
+        ["地铁", "dìtiě", "subway / metro", "daily"],
+        ["睡觉", "shuìjiào", "to sleep", "daily"],
+        ["回宿舍", "huí sùshè", "return to dorm", "campus"]
+      ];
+
+      // Category Filter Pills
+      const CATEGORY_PILLS = [
+        { id: "all", label: "All (100)", match: () => true },
+        { id: "basics", label: "Basics", match: (c) => c.category === "basics" },
+        { id: "survival", label: "Survival", match: (c) => c.category === "survival" },
+        { id: "verbs", label: "Verbs", match: (c) => c.category === "verbs" },
+        { id: "food_drink", label: "Food & Drink", match: (c) => c.category === "food_drink" },
+        { id: "nutrition", label: "Nutrition", match: (c) => c.category === "nutrition" },
+        { id: "fitness", label: "Fitness", match: (c) => c.category === "fitness" },
+        { id: "campus_daily", label: "Campus & Daily", match: (c) => ["campus", "academics", "daily", "places"].includes(c.category) },
+        { id: "directions_time", label: "Directions & Time", match: (c) => ["directions", "time"].includes(c.category) },
+        { id: "numbers", label: "Numbers", match: (c) => c.category === "numbers" }
+      ];
+
+      const CATEGORY_DISPLAY_NAMES = {
+        basics: "Basics & Polite",
+        survival: "Survival & Pay",
+        verbs: "Essential Verbs",
+        food_drink: "Food & Drink",
+        places: "Places",
+        directions: "Directions",
+        time: "Time",
+        numbers: "Numbers",
+        nutrition: "Food & Nutrition",
+        fitness: "Gym & Fitness",
+        academics: "Campus · Academics",
+        campus: "Campus Life",
+        daily: "Daily Life"
+      };
+
+      const STORAGE_KEY_SRS = "chinese100_srs_v2";
+      const STORAGE_KEY_PREFS = "chinese100_prefs_v2";
+
+      // =======================================================================
+      // 2. APPLICATION STATE
+      // =======================================================================
+      let cards = [];
+      let cardMap = {};
+      let activeCategory = "all";
+      let studyQueue = [];
+      let initialQueueSize = 100;
+      let currentCard = null;
+      let isFlipped = false;
+      let isCramMode = false;
+      let userHasInteracted = false;
+
+      let prefs = {
+        autoSpeak: true,
+        speechRate: 1.0,
+        darkMode: true,
+        streak: 0
+      };
+
+      let selectedVoice = null;
+      let speechTimeoutId = null;
+      let toastTimeoutId = null;
+
+      // Helper to strip tone marks so user can search "nihao" or "jirou"
+      function stripTones(str) {
+        if (!str) return "";
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      }
+
+      // =======================================================================
+      // 3. SAFE STORAGE & INITIALIZATION
+      // =======================================================================
+      function loadPrefs() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY_PREFS);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === "object") {
+              prefs.autoSpeak = typeof parsed.autoSpeak === "boolean" ? parsed.autoSpeak : true;
+              prefs.speechRate = typeof parsed.speechRate === "number" ? parsed.speechRate : 1.0;
+              prefs.darkMode = typeof parsed.darkMode === "boolean" ? parsed.darkMode : true;
+              prefs.streak = typeof parsed.streak === "number" ? parsed.streak : 0;
+            }
+          }
+        } catch (err) {
+          console.warn("Preferences reset due to storage error:", err);
+        }
+      }
+
+      function savePrefs() {
+        try {
+          localStorage.setItem(STORAGE_KEY_PREFS, JSON.stringify(prefs));
+        } catch (err) {
+          console.warn("Could not save preferences:", err);
+        }
+      }
+
+      function loadCardsAndSRS() {
+        let savedSRS = {};
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY_SRS);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            if (parsed && typeof parsed === "object") {
+              savedSRS = parsed;
+            }
+          }
+        } catch (err) {
+          console.warn("SRS storage reset due to corrupted data:", err);
+          savedSRS = {};
+        }
+
+        cards = [];
+        cardMap = {};
+
+        for (let i = 0; i < RAW_WORDS.length; i++) {
+          const row = RAW_WORDS[i];
+          const hanzi = row[0];
+          const pinyin = row[1];
+          const english = row[2];
+          const category = row[3];
+          const id = "card_" + i;
+
+          const existing = savedSRS[id];
+          const srs = (existing && typeof existing === "object") ? {
+            status: ["new", "learning", "mastered"].includes(existing.status) ? existing.status : "new",
+            ease: typeof existing.ease === "number" ? existing.ease : 2.5,
+            intervalMins: typeof existing.intervalMins === "number" ? existing.intervalMins : 0,
+            reps: typeof existing.reps === "number" ? existing.reps : 0,
+            due: typeof existing.due === "number" ? existing.due : 0,
+            lastReviewed: typeof existing.lastReviewed === "number" ? existing.lastReviewed : 0
+          } : {
+            status: "new",
+            ease: 2.5,
+            intervalMins: 0,
+            reps: 0,
+            due: 0,
+            lastReviewed: 0
+          };
+
+          const cardObj = {
+            id: id,
+            index: i + 1,
+            hanzi: hanzi,
+            pinyin: pinyin,
+            pinyinPlain: stripTones(pinyin),
+            english: english,
+            category: category,
+            srs: srs
+          };
+
+          cards.push(cardObj);
+          cardMap[id] = cardObj;
+        }
+      }
+
+      function saveSRS() {
+        try {
+          const payload = {};
+          for (let i = 0; i < cards.length; i++) {
+            const c = cards[i];
+            payload[c.id] = c.srs;
+          }
+          localStorage.setItem(STORAGE_KEY_SRS, JSON.stringify(payload));
+        } catch (err) {
+          console.warn("Could not save SRS state:", err);
+        }
+      }
+
+      // =======================================================================
+      // 4. FISHER-YATES SHUFFLE & QUEUE ENGINE
+      // =======================================================================
+      function shuffleArray(arr) {
+        const copy = arr.slice();
+        for (let i = copy.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          const temp = copy[i];
+          copy[i] = copy[j];
+          copy[j] = temp;
+        }
+        return copy;
+      }
+
+      function getFilteredDeck() {
+        const pill = CATEGORY_PILLS.find((p) => p.id === activeCategory);
+        if (!pill) return cards.slice();
+        return cards.filter(pill.match);
+      }
+
+      function buildStudyQueue() {
+        const now = Date.now();
+        const pool = getFilteredDeck();
+
+        if (isCramMode) {
+          studyQueue = shuffleArray(pool);
+        } else {
+          // Gather due learning cards, due mastered cards, and new cards
+          const dueCards = pool.filter((c) => {
+            if (c.srs.status === "new") return true;
+            if (c.srs.status === "learning" && c.srs.due <= now + 15 * 60 * 1000) return true;
+            if (c.srs.status === "mastered" && c.srs.due <= now) return true;
+            return false;
+          });
+
+          // Always shuffle with Fisher-Yates so the user NEVER gets the static order (nihao, xiexie...)
+          studyQueue = shuffleArray(dueCards);
+        }
+
+        // Validate every card in studyQueue exists
+        studyQueue = studyQueue.filter((c) => c && cardMap[c.id]);
+        initialQueueSize = Math.max(studyQueue.length, 1);
+        currentCard = studyQueue.length > 0 ? studyQueue[0] : null;
+        isFlipped = false;
+
+        updateModeUI();
+      }
+
+      function manualShuffleQueue() {
+        userHasInteracted = true;
+        const pool = getFilteredDeck();
+        if (pool.length === 0) return;
+
+        const prevId = currentCard ? currentCard.id : null;
+
+        if (studyQueue.length <= 1) {
+          studyQueue = shuffleArray(pool);
+          initialQueueSize = Math.max(studyQueue.length, 1);
+        } else {
+          studyQueue = shuffleArray(studyQueue);
+        }
+
+        // Guarantee a new top card if more than 1 card is in the queue
+        if (studyQueue.length > 1 && prevId && studyQueue[0].id === prevId) {
+          const swapIndex = 1 + Math.floor(Math.random() * (studyQueue.length - 1));
+          const first = studyQueue[0];
+          studyQueue[0] = studyQueue[swapIndex];
+          studyQueue[swapIndex] = first;
+        }
+
+        currentCard = studyQueue[0] || null;
+        isFlipped = false;
+
+        const inner = document.getElementById("flashcardInner");
+        if (inner) inner.classList.remove("is-flipped");
+
+        renderCurrentCard(true);
+        showToast("Queue Shuffled 🔀");
+      }
+
+      // =======================================================================
+      // 5. SPACED REPETITION (SM-2) INTERVALS & RATING
+      // =======================================================================
+      function formatIntervalLabel(mins) {
+        if (mins < 1) return "<1m";
+        if (mins < 60) return Math.round(mins) + "m";
+        const hours = mins / 60;
+        if (hours < 24) return Math.round(hours) + "h";
+        const days = Math.round(hours / 24);
+        return days + "d";
+      }
+
+      function computeNextIntervals(card) {
+        if (!card || !card.srs) {
+          return { 1: 1, 2: 6, 3: 1440, 4: 4320 };
+        }
+        const srs = card.srs;
+        if (srs.status === "new" || srs.reps === 0) {
+          return {
+            1: 1,          // Again: 1m
+            2: 6,          // Hard: 6m
+            3: 24 * 60,    // Good: 1d
+            4: 4 * 24 * 60 // Easy: 4d
+          };
+        }
+        const cur = Math.max(srs.intervalMins || 60, 10);
+        const ease = Math.max(srs.ease || 2.5, 1.3);
+        return {
+          1: 1,
+          2: Math.max(10, Math.round(cur * 1.2)),
+          3: Math.max(24 * 60, Math.round(cur * ease)),
+          4: Math.max(4 * 24 * 60, Math.round(cur * ease * 1.35))
+        };
+      }
+
+      function rateCard(rating) {
+        userHasInteracted = true;
+        if (!currentCard) return;
+
+        const now = Date.now();
+        const srs = currentCard.srs;
+        const intervals = computeNextIntervals(currentCard);
+        const nextMins = intervals[rating] || 10;
+
+        // Update SM-2 parameters
+        srs.lastReviewed = now;
+        if (rating === 1) {
+          srs.status = "learning";
+          srs.reps = 0;
+          srs.ease = Math.max(1.3, (srs.ease || 2.5) - 0.2);
+          srs.intervalMins = 1;
+          srs.due = now + 60 * 1000;
+        } else if (rating === 2) {
+          srs.status = "learning";
+          srs.reps = Math.max(1, srs.reps);
+          srs.ease = Math.max(1.3, (srs.ease || 2.5) - 0.15);
+          srs.intervalMins = nextMins;
+          srs.due = now + nextMins * 60 * 1000;
+        } else if (rating === 3) {
+          srs.reps = (srs.reps || 0) + 1;
+          srs.intervalMins = nextMins;
+          srs.status = nextMins >= 24 * 60 ? "mastered" : "learning";
+          srs.due = now + nextMins * 60 * 1000;
+        } else if (rating === 4) {
+          srs.reps = (srs.reps || 0) + 1;
+          srs.ease = Math.min(3.0, (srs.ease || 2.5) + 0.15);
+          srs.intervalMins = nextMins;
+          srs.status = "mastered";
+          srs.due = now + nextMins * 60 * 1000;
+        }
+
+        // Update streak counter
+        if (rating >= 3) {
+          prefs.streak = (prefs.streak || 0) + 1;
+        } else if (rating === 1) {
+          prefs.streak = 0;
+        }
+        const streakEl = document.getElementById("streakCount");
+        if (streakEl) streakEl.textContent = String(prefs.streak);
+
+        saveSRS();
+        savePrefs();
+
+        // Remove current card from front of queue
+        const ratedCard = studyQueue.shift();
+
+        // If rated "Again" (1) or "Hard" (2), re-insert at a random offset (3 to 7 cards ahead)
+        if (rating === 1 || rating === 2) {
+          const minOffset = 3;
+          const maxOffset = 7;
+          const randomOffset = minOffset + Math.floor(Math.random() * (maxOffset - minOffset + 1));
+          const insertPos = Math.min(studyQueue.length, randomOffset);
+          studyQueue.splice(insertPos, 0, ratedCard);
+        }
+
+        currentCard = studyQueue.length > 0 ? studyQueue[0] : null;
+        isFlipped = false;
+
+        const inner = document.getElementById("flashcardInner");
+        if (inner) inner.classList.remove("is-flipped");
+
+        updateHeaderStats();
+        renderCurrentCard(true);
+      }
+
+      // =======================================================================
+      // 6. WEB SPEECH API (MANDARIN CHINESE - iOS SAFARI SAFE)
+      // =======================================================================
+      function initSpeechSynthesis() {
+        try {
+          if (!("speechSynthesis" in window)) {
+            const statusEl = document.getElementById("voiceEngineStatus");
+            if (statusEl) statusEl.textContent = "Speech API unavailable";
+            return;
+          }
+
+          const selectMandarinVoice = () => {
+            try {
+              const voices = window.speechSynthesis.getVoices() || [];
+              const zhVoices = voices.filter((v) => {
+                if (!v || !v.lang) return false;
+                const lang = v.lang.toLowerCase();
+                const name = (v.name || "").toLowerCase();
+                return (
+                  lang.startsWith("zh") ||
+                  lang.includes("cmn") ||
+                  name.includes("chinese") ||
+                  name.includes("ting") ||
+                  name.includes("meijia") ||
+                  name.includes("sin-ji")
+                );
+              });
+
+              selectedVoice =
+                zhVoices.find((v) => v.name && (v.name.includes("Ting-Ting") || v.name.includes("Yu-shu") || v.name.includes("Li-mu"))) ||
+                zhVoices.find((v) => v.lang && v.lang.replace("_", "-").toLowerCase() === "zh-cn" && v.localService) ||
+                zhVoices.find((v) => v.lang && v.lang.replace("_", "-").toLowerCase() === "zh-cn") ||
+                zhVoices[0] ||
+                null;
+
+              const statusEl = document.getElementById("voiceEngineStatus");
+              if (statusEl) {
+                statusEl.textContent = selectedVoice
+                  ? "Active: " + selectedVoice.name + " (" + selectedVoice.lang + ")"
+                  : "Active: System Mandarin (zh-CN)";
+              }
+            } catch (innerErr) {
+              console.warn("Voice selection warning:", innerErr);
+            }
+          };
+
+          selectMandarinVoice();
+          if (typeof window.speechSynthesis.onvoiceschanged !== "undefined") {
+            window.speechSynthesis.onvoiceschanged = selectMandarinVoice;
+          }
+        } catch (err) {
+          console.warn("Speech synthesis init warning:", err);
+        }
+      }
+
+      function setSpeakingRing(active) {
+        const btn = document.getElementById("frontAudioBtn");
+        if (!btn) return;
+        if (active) {
+          btn.classList.add("speaking-ring");
+        } else {
+          btn.classList.remove("speaking-ring");
+        }
+      }
+
+      function speakText(text, customRate) {
+        userHasInteracted = true;
+        if (!text || !("speechSynthesis" in window)) return;
+
+        try {
+          if (speechTimeoutId) clearTimeout(speechTimeoutId);
+          window.speechSynthesis.cancel();
+
+          speechTimeoutId = setTimeout(() => {
+            try {
+              const utter = new SpeechSynthesisUtterance(text);
+              utter.lang = "zh-CN";
+              if (selectedVoice) {
+                utter.voice = selectedVoice;
+              }
+              utter.rate = typeof customRate === "number" ? customRate : prefs.speechRate;
+              utter.pitch = 1.0;
+
+              utter.onstart = () => setSpeakingRing(true);
+              utter.onend = () => setSpeakingRing(false);
+              utter.onerror = () => setSpeakingRing(false);
+
+              window.speechSynthesis.speak(utter);
+            } catch (speakErr) {
+              console.warn("Speak utterance error:", speakErr);
+              setSpeakingRing(false);
+            }
+          }, 30);
+        } catch (err) {
+          console.warn("Speech synthesis error:", err);
+          setSpeakingRing(false);
+        }
+      }
+
+      function speakCurrentCard(customRate, event) {
+        if (event && typeof event.stopPropagation === "function") {
+          event.stopPropagation();
+        }
+        if (!currentCard) return;
+        speakText(currentCard.hanzi, customRate);
+      }
+
+      function handleAudioBtnTap(event) {
+        if (event && typeof event.stopPropagation === "function") {
+          event.stopPropagation();
+        }
+        speakCurrentCard();
+      }
+
+      // =======================================================================
+      // 7. UI RENDERING & CARD INTERACTIONS
+      // =======================================================================
+      function renderCategoryPills() {
+        const container = document.getElementById("categoryPillContainer");
+        if (!container) return;
+
+        container.innerHTML = "";
+        for (let i = 0; i < CATEGORY_PILLS.length; i++) {
+          const cat = CATEGORY_PILLS[i];
+          const isActive = cat.id === activeCategory;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = isActive
+            ? "ios-press shrink-0 px-3 py-1.5 rounded-full text-xs font-bold bg-ios-blue text-white shadow-sm shadow-ios-blue/30 transition-all"
+            : "ios-press shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 border border-zinc-200/80 dark:border-zinc-800/80 transition-all";
+          btn.textContent = cat.label;
+          btn.addEventListener("click", function () {
+            selectCategory(cat.id);
+          });
+          container.appendChild(btn);
+        }
+      }
+
+      function selectCategory(catId) {
+        userHasInteracted = true;
+        activeCategory = catId;
+        renderCategoryPills();
+        buildStudyQueue();
+        const inner = document.getElementById("flashcardInner");
+        if (inner) inner.classList.remove("is-flipped");
+        renderCurrentCard(true);
+        updateHeaderStats();
+      }
+
+      function renderCurrentCard(animateEntry) {
+        const wrapper = document.getElementById("flashcardWrapper");
+        const emptyState = document.getElementById("emptyDeckState");
+        const controlsArea = document.getElementById("studyControlsArea");
+        const btnShowAnswer = document.getElementById("btnShowAnswer");
+        const ratingGrid = document.getElementById("ratingButtonsGrid");
+        const queueCounter = document.getElementById("queueCounterText");
+        const progressBar = document.getElementById("sessionProgressBar");
+
+        // Update queue counter and progress bar
+        if (queueCounter) {
+          queueCounter.textContent = studyQueue.length + " in queue";
+        }
+        if (progressBar) {
+          const completed = Math.max(0, initialQueueSize - studyQueue.length);
+          const pct = initialQueueSize > 0 ? Math.min(100, Math.max(5, Math.round((completed / initialQueueSize) * 100))) : 100;
+          progressBar.style.width = (studyQueue.length === 0 ? 100 : pct) + "%";
+        }
+
+        // Check if queue is empty
+        if (!currentCard) {
+          if (wrapper) wrapper.classList.add("hidden");
+          if (emptyState) {
+            emptyState.classList.remove("hidden");
+            emptyState.classList.add("flex");
+          }
+          if (controlsArea) controlsArea.classList.add(" opacity-40", "pointer-events-none");
+          return;
+        }
+
+        if (wrapper) wrapper.classList.remove("hidden");
+        if (emptyState) {
+          emptyState.classList.add("hidden");
+          emptyState.classList.remove("flex");
+        }
+        if (controlsArea) controlsArea.classList.remove("opacity-40", "pointer-events-none");
+
+        // Animate card entry
+        if (animateEntry && wrapper) {
+          wrapper.classList.remove("animate-card-enter");
+          void wrapper.offsetWidth;
+          wrapper.classList.add("animate-card-enter");
+        }
+
+        const catLabel = CATEGORY_DISPLAY_NAMES[currentCard.category] || currentCard.category;
+        const frontCat = document.getElementById("frontCategoryBadge");
+        const backCat = document.getElementById("backCategoryBadge");
+        if (frontCat) frontCat.textContent = catLabel;
+        if (backCat) backCat.textContent = catLabel;
+
+        // Status badge on front
+        const statusBadge = document.getElementById("frontStatusBadge");
+        if (statusBadge) {
+          const st = currentCard.srs.status;
+          if (st === "new") {
+            statusBadge.textContent = "New";
+            statusBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-ios-blue/15 text-ios-blue";
+          } else if (st === "learning") {
+            statusBadge.textContent = "Learning";
+            statusBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-500";
+          } else {
+            statusBadge.textContent = "Mastered";
+            statusBadge.className = "px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-ios-green/15 text-ios-green";
+          }
+        }
+
+        // Scale Hanzi font size dynamically based on character count
+        const frontHanzi = document.getElementById("frontHanzi");
+        if (frontHanzi) {
+          frontHanzi.textContent = currentCard.hanzi;
+          const len = currentCard.hanzi.length;
+          if (len <= 2) {
+            frontHanzi.className = "font-hanzi font-bold text-zinc-900 dark:text-white tracking-tight select-text transition-all duration-150 leading-tight mb-8 text-7xl sm:text-8xl";
+          } else if (len === 3) {
+            frontHanzi.className = "font-hanzi font-bold text-zinc-900 dark:text-white tracking-tight select-text transition-all duration-150 leading-tight mb-8 text-6xl sm:text-7xl";
+          } else {
+            frontHanzi.className = "font-hanzi font-bold text-zinc-900 dark:text-white tracking-tight select-text transition-all duration-150 leading-tight mb-8 text-5xl sm:text-6xl";
+          }
+        }
+
+        // Populate back face
+        const backHanziRef = document.getElementById("backHanziRef");
+        const backPinyin = document.getElementById("backPinyin");
+        const backEnglish = document.getElementById("backEnglish");
+        const backIntervalNote = document.getElementById("backIntervalNote");
+
+        if (backHanziRef) backHanziRef.textContent = currentCard.hanzi;
+        if (backPinyin) backPinyin.textContent = currentCard.pinyin;
+        if (backEnglish) backEnglish.textContent = currentCard.english;
+        if (backIntervalNote) {
+          backIntervalNote.textContent = currentCard.srs.reps > 0
+            ? "Reviews: " + currentCard.srs.reps
+            : "First review";
+        }
+
+        // Populate interval labels on the 4 rating buttons
+        const ivs = computeNextIntervals(currentCard);
+        const ivAgain = document.getElementById("ivAgain");
+        const ivHard = document.getElementById("ivHard");
+        const ivGood = document.getElementById("ivGood");
+        const ivEasy = document.getElementById("ivEasy");
+        if (ivAgain) ivAgain.textContent = formatIntervalLabel(ivs[1]);
+        if (ivHard) ivHard.textContent = formatIntervalLabel(ivs[2]);
+        if (ivGood) ivGood.textContent = formatIntervalLabel(ivs[3]);
+        if (ivEasy) ivEasy.textContent = formatIntervalLabel(ivs[4]);
+
+        // Show Answer button vs Rating buttons
+        if (isFlipped) {
+          if (btnShowAnswer) btnShowAnswer.classList.add("hidden");
+          if (ratingGrid) {
+            ratingGrid.classList.remove("hidden");
+            ratingGrid.classList.add("grid");
+          }
+        } else {
+          if (btnShowAnswer) btnShowAnswer.classList.remove("hidden");
+          if (ratingGrid) {
+            ratingGrid.classList.add("hidden");
+            ratingGrid.classList.remove("grid");
+          }
+        }
+
+        // Auto-speak on card appearance if user has interacted and autoSpeak is on
+        if (!isFlipped && prefs.autoSpeak && userHasInteracted) {
+          speakCurrentCard();
+        }
+      }
+
+      function flipCardToBack() {
+        userHasInteracted = true;
+        if (!currentCard) return;
+
+        isFlipped = !isFlipped;
+        const inner = document.getElementById("flashcardInner");
+        const btnShowAnswer = document.getElementById("btnShowAnswer");
+        const ratingGrid = document.getElementById("ratingButtonsGrid");
+
+        if (inner) {
+          if (isFlipped) {
+            inner.classList.add("is-flipped");
+          } else {
+            inner.classList.remove("is-flipped");
+          }
+        }
+
+        if (isFlipped) {
+          if (btnShowAnswer) btnShowAnswer.classList.add("hidden");
+          if (ratingGrid) {
+            ratingGrid.classList.remove("hidden");
+            ratingGrid.classList.add("grid");
+          }
+          if (prefs.autoSpeak) {
+            speakCurrentCard();
+          }
+        } else {
+          if (btnShowAnswer) btnShowAnswer.classList.remove("hidden");
+          if (ratingGrid) {
+            ratingGrid.classList.add("hidden");
+            ratingGrid.classList.remove("grid");
+          }
+        }
+      }
+
+      function handleCardBodyTap(event) {
+        if (event && event.target && event.target.closest("button")) {
+          return;
+        }
+        flipCardToBack();
+      }
+
+      // =======================================================================
+      // 8. HEADER STATS, MODE TOGGLES & SETTINGS
+      // =======================================================================
+      function updateHeaderStats() {
+        const now = Date.now();
+        let newCount = 0;
+        let learningCount = 0;
+        let masteredCount = 0;
+        let dueCount = 0;
+
+        for (let i = 0; i < cards.length; i++) {
+          const s = cards[i].srs;
+          if (s.status === "new") {
+            newCount++;
+            dueCount++;
+          } else if (s.status === "learning") {
+            learningCount++;
+            if (s.due <= now + 15 * 60 * 1000) dueCount++;
+          } else if (s.status === "mastered") {
+            masteredCount++;
+            if (s.due <= now) dueCount++;
+          }
+        }
+
+        const elDue = document.getElementById("statDueCount");
+        const elLearn = document.getElementById("statLearningCount");
+        const elMaster = document.getElementById("statMasteredCount");
+        if (elDue) elDue.textContent = String(dueCount);
+        if (elLearn) elLearn.textContent = String(learningCount);
+        if (elMaster) elMaster.textContent = String(masteredCount);
+
+        // Update modal stats
+        const mNew = document.getElementById("modalStatNew");
+        const mLearn = document.getElementById("modalStatLearning");
+        const mMaster = document.getElementById("modalStatMastered");
+        const mPct = document.getElementById("modalMasteryPercent");
+        const barMastered = document.getElementById("barMastered");
+        const barLearning = document.getElementById("barLearning");
+
+        if (mNew) mNew.textContent = String(newCount);
+        if (mLearn) mLearn.textContent = String(learningCount);
+        if (mMaster) mMaster.textContent = String(masteredCount);
+        if (mPct) mPct.textContent = masteredCount + "% (" + masteredCount + " / 100)";
+        if (barMastered) barMastered.style.width = masteredCount + "%";
+        if (barLearning) barLearning.style.width = learningCount + "%";
+      }
+
+      function updateModeUI() {
+        const pill = document.getElementById("btnModePill");
+        const modalBtn = document.getElementById("cramToggleBtn");
+
+        if (isCramMode) {
+          if (pill) {
+            pill.textContent = "Free Practice";
+            pill.className = "ios-press px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-500/20 text-amber-400 border border-amber-500/30";
+          }
+          if (modalBtn) {
+            modalBtn.textContent = "Free Practice (Cram)";
+            modalBtn.className = "ios-press px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-400 text-xs font-bold";
+          }
+        } else {
+          if (pill) {
+            pill.textContent = "SRS";
+            pill.className = "ios-press px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md bg-ios-blue/15 text-ios-blue border border-ios-blue/30";
+          }
+          if (modalBtn) {
+            modalBtn.textContent = "SRS Due Mode";
+            modalBtn.className = "ios-press px-3.5 py-1.5 rounded-xl bg-ios-blue/15 text-ios-blue text-xs font-bold";
+          }
+        }
+      }
+
+      function toggleStudyMode() {
+        userHasInteracted = true;
+        isCramMode = !isCramMode;
+        buildStudyQueue();
+        const inner = document.getElementById("flashcardInner");
+        if (inner) inner.classList.remove("is-flipped");
+        renderCurrentCard(true);
+        showToast(isCramMode ? "Free Practice Mode (All Cards Shuffled)" : "SRS Due Mode Active");
+      }
+
+      function startCramSession() {
+        userHasInteracted = true;
+        isCramMode = true;
+        buildStudyQueue();
+        const inner = document.getElementById("flashcardInner");
+        if (inner) inner.classList.remove("is-flipped");
+        renderCurrentCard(true);
+        showToast("Free Practice Shuffled 🔀");
+      }
+
+      function updateAudioControlsUI() {
+        const speedLabel = document.getElementById("speedLabel");
+        const speedIcon = document.getElementById("speedIcon");
+        if (speedLabel && speedIcon) {
+          speedLabel.textContent = prefs.speechRate === 1.0 ? "1.0x" : "0.75x";
+          speedIcon.textContent = prefs.speechRate === 1.0 ? "⚡" : "🐢";
+        }
+
+        const btnAuto = document.getElementById("btnAutoSpeak");
+        const autoLabel = document.getElementById("autoSpeakLabel");
+        if (btnAuto && autoLabel) {
+          if (prefs.autoSpeak) {
+            btnAuto.className = "ios-press h-8 px-2 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors bg-ios-blue/15 border-ios-blue/40 text-ios-blue";
+            autoLabel.textContent = "Auto";
+          } else {
+            btnAuto.className = "ios-press h-8 px-2 rounded-xl border text-xs font-semibold flex items-center gap-1 transition-colors bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-400 dark:text-zinc-500";
+            autoLabel.textContent = "Manual";
+          }
+        }
+      }
+
+      function toggleAudioSpeed() {
+        userHasInteracted = true;
+        prefs.speechRate = prefs.speechRate === 1.0 ? 0.75 : 1.0;
+        savePrefs();
+        updateAudioControlsUI();
+        showToast(prefs.speechRate === 1.0 ? "Speed: Normal (1.0x)" : "Speed: Slow (0.75x)");
+        if (currentCard) speakCurrentCard(prefs.speechRate);
+      }
+
+      function toggleAutoSpeak() {
+        userHasInteracted = true;
+        prefs.autoSpeak = !prefs.autoSpeak;
+        savePrefs();
+        updateAudioControlsUI();
+        showToast(prefs.autoSpeak ? "Auto-Speak On 🔊" : "Auto-Speak Off 🔇");
+      }
+
+      function applyTheme() {
+        const root = document.documentElement;
+        const themeBtn = document.getElementById("themeToggleBtn");
+        if (prefs.darkMode) {
+          root.classList.add("dark");
+          if (themeBtn) themeBtn.textContent = "Dark Mode";
+        } else {
+          root.classList.remove("dark");
+          if (themeBtn) themeBtn.textContent = "Light Mode";
+        }
+      }
+
+      function toggleTheme() {
+        prefs.darkMode = !prefs.darkMode;
+        savePrefs();
+        applyTheme();
+      }
+
+      // =======================================================================
+      // 9. TAB NAVIGATION & 100-WORD LOOKUP LIST
+      // =======================================================================
+      function switchTab(tab) {
+        userHasInteracted = true;
+        const studyView = document.getElementById("studyView");
+        const lookupView = document.getElementById("lookupView");
+        const tabStudy = document.getElementById("tabBtnStudy");
+        const tabLookup = document.getElementById("tabBtnLookup");
+
+        if (tab === "lookup") {
+          if (studyView) studyView.classList.add("hidden");
+          if (lookupView) {
+            lookupView.classList.remove("hidden");
+            lookupView.classList.add("flex");
+          }
+          if (tabStudy) tabStudy.className = "ios-press flex flex-col items-center justify-center gap-0.5 text-zinc-400 dark:text-zinc-500";
+          if (tabLookup) tabLookup.className = "ios-press flex flex-col items-center justify-center gap-0.5 text-ios-blue";
+          renderLookupList();
+        } else {
+          if (lookupView) {
+            lookupView.classList.add("hidden");
+            lookupView.classList.remove("flex");
+          }
+          if (studyView) studyView.classList.remove("hidden");
+          if (tabStudy) tabStudy.className = "ios-press flex flex-col items-center justify-center gap-0.5 text-ios-blue";
+          if (tabLookup) tabLookup.className = "ios-press flex flex-col items-center justify-center gap-0.5 text-zinc-400 dark:text-zinc-500";
+        }
+      }
+
+      function renderLookupList() {
+        const input = document.getElementById("lookupSearchInput");
+        const clearBtn = document.getElementById("clearSearchBtn");
+        const countLabel = document.getElementById("lookupCountLabel");
+        const listContainer = document.getElementById("lookupListContainer");
+        if (!listContainer) return;
+
+        const query = input ? input.value.trim().toLowerCase() : "";
+        const queryPlain = stripTones(query);
+
+        if (clearBtn) {
+          if (query.length > 0) {
+            clearBtn.classList.remove("hidden");
+            clearBtn.classList.add("flex");
+          } else {
+            clearBtn.classList.add("hidden");
+            clearBtn.classList.remove("flex");
+          }
+        }
+
+        const baseDeck = getFilteredDeck();
+        const filtered = baseDeck.filter((c) => {
+          if (!query) return true;
+          return (
+            c.hanzi.includes(query) ||
+            c.pinyin.toLowerCase().includes(query) ||
+            c.pinyinPlain.includes(queryPlain) ||
+            c.english.toLowerCase().includes(query) ||
+            c.category.toLowerCase().includes(query)
+          );
+        });
+
+        if (countLabel) {
+          countLabel.textContent = "Showing " + filtered.length + " of " + baseDeck.length + " words";
+        }
+
+        listContainer.innerHTML = "";
+
+        for (let i = 0; i < filtered.length; i++) {
+          const item = filtered[i];
+          const row = document.createElement("div");
+          row.className = "ios-press p-3.5 rounded-2xl bg-white dark:bg-ios-card border border-zinc-200/80 dark:border-zinc-800/80 flex items-center justify-between gap-3 cursor-pointer";
+
+          const left = document.createElement("div");
+          left.className = "flex items-center gap-3.5 min-w-0";
+
+          const hanziBox = document.createElement("div");
+          hanziBox.className = "w-12 h-12 rounded-xl bg-zinc-100 dark:bg-zinc-800/90 flex items-center justify-center font-hanzi font-bold text-lg text-zinc-900 dark:text-white shrink-0";
+          hanziBox.textContent = item.hanzi;
+
+          const textCol = document.createElement("div");
+          textCol.className = "min-w-0";
+
+          const topLine = document.createElement("div");
+          topLine.className = "flex items-center gap-2";
+
+          const pinyinSpan = document.createElement("span");
+          pinyinSpan.className = "text-sm font-bold text-zinc-900 dark:text-white";
+          pinyinSpan.textContent = item.pinyin;
+
+          const catBadge = document.createElement("span");
+          catBadge.className = "px-1.5 py-0.5 rounded text-[10px] font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400";
+          catBadge.textContent = CATEGORY_DISPLAY_NAMES[item.category] || item.category;
+
+          topLine.appendChild(pinyinSpan);
+          topLine.appendChild(catBadge);
+
+          const engDiv = document.createElement("div");
+          engDiv.className = "text-xs font-medium text-ios-blue truncate mt-0.5";
+          engDiv.textContent = item.english;
+
+          textCol.appendChild(topLine);
+          textCol.appendChild(engDiv);
+
+          left.appendChild(hanziBox);
+          left.appendChild(textCol);
+
+          const audioIcon = document.createElement("button");
+          audioIcon.type = "button";
+          audioIcon.className = "w-9 h-9 rounded-full bg-ios-blue/15 text-ios-blue flex items-center justify-center shrink-0";
+          audioIcon.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/></svg>';
+
+          row.appendChild(left);
+          row.appendChild(audioIcon);
+
+          row.addEventListener("click", function () {
+            speakText(item.hanzi, prefs.speechRate);
+          });
+
+          listContainer.appendChild(row);
+        }
+      }
+
+      function clearLookupSearch() {
+        const input = document.getElementById("lookupSearchInput");
+        if (input) {
+          input.value = "";
+          input.focus();
+        }
+        renderLookupList();
+      }
+
+      // =======================================================================
+      // 10. SETTINGS MODAL & RESET HANDLERS
+      // =======================================================================
+      function openSettingsModal() {
+        updateHeaderStats();
+        hideResetConfirmation();
+        const modal = document.getElementById("settingsModal");
+        if (modal) {
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+        }
+      }
+
+      function closeSettingsModal() {
+        const modal = document.getElementById("settingsModal");
+        if (modal) {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+        }
+      }
+
+      function showResetConfirmation() {
+        const btn1 = document.getElementById("btnResetStep1");
+        const box = document.getElementById("resetConfirmBox");
+        if (btn1) btn1.classList.add("hidden");
+        if (box) {
+          box.classList.remove("hidden");
+          box.classList.add("flex");
+        }
+      }
+
+      function hideResetConfirmation() {
+        const btn1 = document.getElementById("btnResetStep1");
+        const box = document.getElementById("resetConfirmBox");
+        if (btn1) btn1.classList.remove("hidden");
+        if (box) {
+          box.classList.add("hidden");
+          box.classList.remove("flex");
+        }
+      }
+
+      function confirmResetAllProgress() {
+        try {
+          localStorage.removeItem(STORAGE_KEY_SRS);
+        } catch (err) {
+          console.warn("Could not clear SRS storage:", err);
+        }
+        prefs.streak = 0;
+        savePrefs();
+        const streakEl = document.getElementById("streakCount");
+        if (streakEl) streakEl.textContent = "0";
+
+        loadCardsAndSRS();
+        buildStudyQueue();
+        updateHeaderStats();
+        renderCurrentCard(true);
+        hideResetConfirmation();
+        closeSettingsModal();
+        showToast("Deck Progress Reset & Shuffled");
+      }
+
+      function showToast(msg) {
+        const banner = document.getElementById("toastBanner");
+        if (!banner) return;
+        banner.textContent = msg;
+        banner.classList.remove("opacity-0", "-translate-y-2");
+        banner.classList.add("opacity-100", "translate-y-0");
+
+        if (toastTimeoutId) clearTimeout(toastTimeoutId);
+        toastTimeoutId = setTimeout(() => {
+          banner.classList.remove("opacity-100", "translate-y-0");
+          banner.classList.add("opacity-0", "-translate-y-2");
+        }, 1600);
+      }
+
+      // =======================================================================
+      // 11. EXPOSE ALL HANDLERS ON WINDOW & INITIALIZE ON DOM READY
+      // =======================================================================
+      window.manualShuffleQueue = manualShuffleQueue;
+      window.toggleAudioSpeed = toggleAudioSpeed;
+      window.toggleAutoSpeak = toggleAutoSpeak;
+      window.toggleStudyMode = toggleStudyMode;
+      window.startCramSession = startCramSession;
+      window.selectCategory = selectCategory;
+      window.flipCardToBack = flipCardToBack;
+      window.handleCardBodyTap = handleCardBodyTap;
+      window.handleAudioBtnTap = handleAudioBtnTap;
+      window.speakCurrentCard = speakCurrentCard;
+      window.speakText = speakText;
+      window.rateCard = rateCard;
+      window.switchTab = switchTab;
+      window.renderLookupList = renderLookupList;
+      window.clearLookupSearch = clearLookupSearch;
+      window.openSettingsModal = openSettingsModal;
+      window.closeSettingsModal = closeSettingsModal;
+      window.toggleTheme = toggleTheme;
+      window.showResetConfirmation = showResetConfirmation;
+      window.hideResetConfirmation = hideResetConfirmation;
+      window.confirmResetAllProgress = confirmResetAllProgress;
+
+      function init() {
+        loadPrefs();
+        applyTheme();
+        updateAudioControlsUI();
+        const streakEl = document.getElementById("streakCount");
+        if (streakEl) streakEl.textContent = String(prefs.streak || 0);
+
+        loadCardsAndSRS();
+        initSpeechSynthesis();
+        renderCategoryPills();
+        buildStudyQueue();
+        updateHeaderStats();
+        renderCurrentCard(false);
+        renderLookupList();
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
