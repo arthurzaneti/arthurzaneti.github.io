@@ -1,169 +1,405 @@
-/* Reset */
+/* === Classical Academic Typography === */
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+    --bg-paper: #fbfaf7;
+    --bg-elevated: #f4f1ea;
+    --text-ink: #161616;
+    --text-muted: #57534e;
+    --accent-academic: #7c1d1d;     /* Deep academic crimson */
+    --accent-hover: #4c0f0f;
+    --border-rule: #dcd7cd;
+    --border-strong: #292524;
+    --font-serif: "Crimson Pro", "Latin Modern Roman", "Computer Modern Serif", "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+    --font-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+/* === Reset === */
 * {
     box-sizing: border-box;
 }
 
-/* Base */
+/* === Base Page Structure === */
 body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    background-color: #f6f7f9;
-    color: #1a1a1a;
-    line-height: 1.7;
+    max-width: 720px;
+    margin: 56px auto 88px auto;
+    padding: 0 24px;
+    font-family: var(--font-serif);
+    font-size: 1.18rem;
+    line-height: 1.72;
+    background-color: var(--bg-paper);
+    color: var(--text-ink);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
 }
 
-/* Layout container */
+/* === Layout Containers (Seamless Monograph Flow) === */
 .container {
-    max-width: 1100px;
-    margin: 60px auto;
-    padding: 40px 24px;
-    background: white;
-    border-radius: 14px;
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
 }
 
-/* Typography */
+.container + .container {
+    margin-top: 2.75rem;
+    padding-top: 2.25rem;
+    border-top: 1px solid var(--border-rule);
+}
+
+/* === Typography & Hierarchy === */
 h1 {
-    font-size: 2.4rem;
-    margin-bottom: 10px;
-    letter-spacing: -0.5px;
+    font-size: 2.35rem;
+    font-weight: 700;
+    line-height: 1.15;
+    margin: 0 0 0.75rem 0;
+    letter-spacing: -0.02em;
+    color: var(--text-ink);
+}
+
+.header h1 {
+    font-size: 1.85rem;
+    font-variant: small-caps;
+    letter-spacing: 0.04em;
+    margin-bottom: 1.25rem;
 }
 
 h2 {
-    font-size: 1.5rem;
-    margin-top: 40px;
-    margin-bottom: 10px;
-    color: #333;
+    font-size: 1.38rem;
+    font-weight: 600;
+    margin-top: 2.4rem;
+    margin-bottom: 0.65rem;
+    color: var(--text-ink);
+    letter-spacing: -0.01em;
 }
 
 p {
-    margin-bottom: 16px;
-    font-size: 1.05rem;
+    margin: 0 0 1.15rem 0;
+    font-size: 1.15rem;
+    text-align: left;
 }
 
-/* Links */
+/* === Links === */
 a {
-    color: #2563eb;
-    text-decoration: none;
+    color: var(--accent-academic);
+    text-decoration: underline;
+    text-decoration-color: rgba(124, 29, 29, 0.35);
+    text-underline-offset: 3px;
+    transition: color 0.15s ease, text-decoration-color 0.15s ease;
 }
 
 a:hover {
-    text-decoration: underline;
+    color: var(--accent-hover);
+    text-decoration-color: var(--accent-hover);
 }
 
-/* Big link (refined) */
-.big-link {
-    display: block;
-    font-size: 1.6rem;
+/* === Lists (Essays & Quotes) === */
+ul {
+    padding-left: 1.35rem;
+    margin: 0.5rem 0 1.75rem 0;
+}
+
+li {
+    margin-bottom: 1.15rem;
+    line-height: 1.65;
+}
+
+li > a:first-child {
     font-weight: 600;
-    margin: 24px 0;
 }
 
-/* === Math boxes (refined, less heavy) === */
-.math-box {
-    padding: 18px 22px;
-    margin: 28px 0;
-    border-left: 5px solid;
-    border-radius: 10px;
-    line-height: 1.6;
-    background-color: #fafafa;
+/* === Directory / Big Navigation Links === */
+.nav-links {
+    margin: 2.5rem 0;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--border-rule);
+    border-bottom: 1px solid var(--border-rule);
 }
 
-/* Variants (more subtle, modern colors) */
-.theorem {
-    border-color: #2563eb;
-    background-color: #eef4ff;
-    font-style: italic;
-}
-.theorem strong {
-    font-style: normal;
-    color: #1d4ed8;
-}
-
-.definition {
-    border-color: #16a34a;
-    background-color: #ecfdf5;
-}
-.definition strong {
-    color: #15803d;
+.big-link {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    font-size: 1.25rem;
+    font-weight: 600;
+    padding: 0.65rem 0.4rem;
+    margin: 0;
+    text-decoration: none;
+    color: var(--text-ink);
+    border-bottom: 1px dashed rgba(220, 215, 205, 0.65);
+    transition: padding-left 0.15s ease, color 0.15s ease, background-color 0.15s ease;
 }
 
-.corollary {
-    border-color: #9333ea;
-    background-color: #f5f3ff;
-    font-style: italic;
-}
-.corollary strong {
-    font-style: normal;
-    color: #7e22ce;
+.big-link:last-child {
+    border-bottom: none;
 }
 
-.proof {
-    border-color: #6b7280;
-    background-color: #f9fafb;
-    font-style: italic;
-}
-.proof strong {
-    font-style: normal;
-    color: #4b5563;
-}
-.proof::after {
-    content: "∎";
-    float: right;
-    font-weight: bold;
+.big-link::after {
+    content: "→";
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    transition: transform 0.15s ease, color 0.15s ease;
 }
 
-.exercise {
-    border-color: #f59e0b;
-    background-color: #fffbeb;
-}
-.exercise strong {
-    color: #d97706;
-}
-body {
-  max-width: 680px;
-  margin: 40px auto;
-  padding: 0 16px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, serif;
-  line-height: 1.6;
-  color: #222;
+.big-link:hover {
+    color: var(--accent-academic);
+    background-color: rgba(244, 241, 234, 0.6);
+    padding-left: 0.75rem;
+    text-decoration: none;
 }
 
-.snippet {
-  margin-bottom: 3.5rem;
-  padding-bottom: 2.5rem;
-  border-bottom: 1px solid #e5e5e5;
-}
-
-.snippet:last-child {
-  border-bottom: none;
-}
-
-.snippet time {
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #666;
-  margin-bottom: 0.4rem;
-}
-
-.snippet h2 {
-  margin-top: 0;
-  font-size: 1.4rem;
+.big-link:hover::after {
+    transform: translateX(4px);
+    color: var(--accent-academic);
 }
 
 /* === Profile Banner === */
 .profile-banner {
-    width: 100%;
-    height: 400px; /* Adjust this to make it taller or shorter */
+    width: 70%;
+    height: 440px;
     object-fit: cover;
-    object-position: center 38%; /* Adjust percentage to pan up or down */
-    border-radius: 10px; /* Matches your math-box borders */
-    margin: 16px 0 32px 0;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Subtle shadow to match container */
-    image-rendering: high-quality;
-    image-rendering: -webkit-optimize-contrast;
-    
+    object-position: center 60%;
+    border-radius: 2px;
+    border: 1px solid var(--border-rule);
+    margin: 0.75rem auto 1.5rem auto; /* Changed from 0.75rem 0 1.5rem 0 to auto left/right */
+    display: block;
+}
+
+/* === Blog / Math Snippets Header & Stream === */
+.blog-header {
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-strong);
+}
+
+.blog-header p {
+    color: var(--text-muted);
+    font-style: italic;
+    margin-bottom: 0;
+}
+
+.snippet {
+    margin-bottom: 3.5rem;
+    padding-bottom: 2.75rem;
+    border-bottom: 1px solid var(--border-rule);
+}
+
+.snippet:last-child {
+    border-bottom: none;
+}
+
+.snippet time {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 0.45rem;
+}
+
+.snippet h2 {
+    margin-top: 1.4rem;
+    margin-bottom: 0.75rem;
+    font-size: 1.45rem;
+}
+
+.snippet time + h2 {
+    margin-top: 0;
+}
+
+/* === Mathematical Environments (LaTeX / Bourbaki Style) === */
+.math-box,
+.theorem,
+.definition,
+.corollary,
+.proof,
+.exercise {
+    padding: 1rem 1.35rem;
+    margin: 1.65rem 0;
+    border-left: 3px solid var(--border-strong);
+    background-color: var(--bg-elevated);
+    border-radius: 0 2px 2px 0;
+    line-height: 1.68;
+}
+
+.theorem {
+    border-left-color: #1e3a5f;
+    background-color: #f4f6f9;
+    font-style: italic;
+}
+
+.theorem strong {
+    font-style: normal;
+    font-variant: small-caps;
+    letter-spacing: 0.03em;
+    color: #152c4a;
+    margin-right: 0.35rem;
+}
+
+.definition {
+    border-left-color: #1f4e3d;
+    background-color: #f3f7f5;
+}
+
+.definition strong {
+    font-variant: small-caps;
+    letter-spacing: 0.03em;
+    color: #163a2d;
+    margin-right: 0.35rem;
+}
+
+.corollary {
+    border-left-color: #5b2c6f;
+    background-color: #f7f4f9;
+    font-style: italic;
+}
+
+.corollary strong {
+    font-style: normal;
+    font-variant: small-caps;
+    letter-spacing: 0.03em;
+    color: #431e52;
+    margin-right: 0.35rem;
+}
+
+.proof {
+    border-left-color: #78716c;
+    background-color: transparent;
+    padding-left: 1.15rem;
+    font-style: normal;
+}
+
+.proof strong {
+    font-style: italic;
+    color: var(--text-ink);
+}
+
+.proof::after {
+    content: "∎";
+    float: right;
+    font-size: 0.95rem;
+    color: var(--text-ink);
+}
+
+.exercise {
+    border-left-color: #854d0e;
+    background-color: #f9f6f0;
+}
+
+.exercise strong {
+    font-variant: small-caps;
+    letter-spacing: 0.03em;
+    color: #713f12;
+    margin-right: 0.35rem;
+}
+
+/* === Commutative Diagrams (Quiver Embeds) === */
+.quiver-embed {
+    display: block;
+    max-width: 100%;
+    margin: 1.35rem auto 0.5rem auto;
+    background-color: #ffffff;
+    border: 1px solid var(--border-rule) !important;
+    border-radius: 3px !important;
+}
+
+/* === Blockquotes === */
+blockquote,
+.snippet-quote {
+    margin: 1.5rem 0;
+    padding: 0.5rem 1.25rem;
+    border-left: 2px solid var(--text-muted);
+    color: #3f3c38;
+    font-style: italic;
+}
+
+blockquote p,
+.snippet-quote p {
+    margin-bottom: 0.5rem;
+}
+
+blockquote cite,
+.snippet-quote cite {
+    display: block;
+    font-size: 0.95rem;
+    font-style: normal;
+    color: var(--text-muted);
+}
+
+/* === Busreads Archive Utilities === */
+.back-nav {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-bottom: 1.25rem;
+}
+
+.back-nav:hover {
+    color: var(--accent-academic);
+    text-decoration: none;
+}
+
+.paper-list {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 1rem;
+}
+
+.paper-item {
+    padding: 1.15rem 0;
+    border-bottom: 1px solid var(--border-rule);
+}
+
+.paper-item:last-child {
+    border-bottom: none;
+}
+
+.paper-meta {
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.2rem;
+}
+
+.paper-title {
+    font-size: 1.22rem;
+    font-weight: 600;
+    display: inline-block;
+    margin-bottom: 0.35rem;
+}
+
+.paper-abstract {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #33302c;
+    line-height: 1.62;
+}
+
+/* === Mobile Responsiveness === */
+@media (max-width: 600px) {
+    body {
+        margin: 32px auto 64px auto;
+        padding: 0 18px;
+        font-size: 1.1rem;
+    }
+
+    h1 {
+        font-size: 1.95rem;
+    }
+
+    .profile-banner {
+        height: 500px;
+    }
 }
